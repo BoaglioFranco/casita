@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS activity_events;
+DROP TABLE IF EXISTS push_subscriptions;
+DROP TABLE IF EXISTS items;
+DROP TABLE IF EXISTS lists;
+DROP TABLE IF EXISTS members;
+DROP TABLE IF EXISTS households;
