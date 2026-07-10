@@ -1,60 +1,14 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#1f7a4d" />
-    <title>Groceries</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#2f6f4e" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="stylesheet" href="/styles.css" />
+    <title>Groceries</title>
   </head>
   <body>
-    <main class="app-shell">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">Home</p>
-          <h1>Groceries</h1>
-        </div>
-        <button id="refresh-button" class="secondary-button" type="button">
-          Refresh
-        </button>
-      </header>
-
-      <section class="toolbar" aria-label="Settings">
-        <label class="api-field">
-          <span>API</span>
-          <input id="api-url" type="url" value="http://localhost:2345" />
-        </label>
-        <div class="push-actions">
-          <button id="enable-button" class="secondary-button" type="button">
-            Enable notifications
-          </button>
-          <button id="send-button" class="secondary-button" type="button" disabled>
-            Test push
-          </button>
-        </div>
-      </section>
-
-      <section class="list-panel" aria-label="Groceries list">
-        <form id="item-form" class="item-form">
-          <input
-            id="item-name"
-            name="name"
-            type="text"
-            autocomplete="off"
-            placeholder="Add an item"
-            required
-          />
-          <button id="add-button" type="submit">Add</button>
-        </form>
-
-        <ul id="items-list" class="items-list"></ul>
-        <p id="empty-state" class="empty-state">No items yet.</p>
-      </section>
-
-      <p id="status" class="status" role="status">Ready.</p>
-    </main>
-
-    <script src="/app.js" type="module"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

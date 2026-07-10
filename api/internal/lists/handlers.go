@@ -4,15 +4,21 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/BoaglioFranco/groceriesList/api/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
 func (s *ListService) createListHandler(c *gin.Context) {
 	params := &CreateListPayload{}
+	householdID := utils.HouseholdIDFromContext(c)
 
-	householdID, err := strconv.ParseInt(c.Param("householdId"), 10, 64)
+	householdIDParam, err := strconv.ParseInt(c.Param("householdId"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid household id"})
+		return
+	}
+	if householdIDParam != householdID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
 	}
 

@@ -1,1 +1,52 @@
 package notifications
+
+import (
+	"time"
+
+	"github.com/SherClockHolmes/webpush-go"
+)
+
+type StoreSubscriptionParams struct {
+	HouseholdId int64
+	MemberId    int64
+	Endpoint    string
+	P256dh      string
+	Auth        string
+}
+
+type Notification struct {
+	Title string `json:"title"`
+	Body  string `json:"body"`
+}
+
+type PushSubscriptionPayload struct {
+	Endpoint string                      `json:"endpoint"`
+	Keys     PushSubscriptionPayloadKeys `json:"keys"`
+}
+
+type PushSubscriptionPayloadKeys struct {
+	P256dh string `json:"p256dh"`
+	Auth   string `json:"auth"`
+}
+
+type PushSubscription struct {
+	ID          int64     `db:"id"`
+	HouseholdID int64     `db:"household_id"`
+	MemberID    int64     `db:"member_id"`
+	Endpoint    string    `db:"endpoint"`
+	P256dh      string    `db:"p256dh"`
+	Auth        string    `db:"auth"`
+	CreatedAt   time.Time `db:"created_at"`
+	UpdatedAt   time.Time `db:"updated_at"`
+}
+
+func (s *PushSubscription) ToWebpushSubscription() *webpush.Subscription {
+	return &webpush.Subscription{
+		Endpoint: s.Endpoint,
+		Keys: webpush.Keys{
+			Auth:   s.Auth,
+			P256dh: s.P256dh,
+		},
+	}
+
+}

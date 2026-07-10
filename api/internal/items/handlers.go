@@ -11,6 +11,7 @@ import (
 
 func (s *ItemService) createItemHandler(c *gin.Context) {
 	memberId := utils.MemberIDFromContext(c)
+	householdID := utils.HouseholdIDFromContext(c)
 	params := &CreateItemPayload{}
 
 	listID, err := strconv.ParseInt(c.Param("listId"), 10, 64)
@@ -18,9 +19,13 @@ func (s *ItemService) createItemHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid list id"})
 		return
 	}
-	householdID, err := strconv.ParseInt(c.Param("householdId"), 10, 64)
+	householdIDParam, err := strconv.ParseInt(c.Param("householdId"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid household id"})
+		return
+	}
+	if householdIDParam != householdID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
 	}
 
@@ -47,15 +52,20 @@ func (s *ItemService) createItemHandler(c *gin.Context) {
 
 func (s *ItemService) removeItemHandler(c *gin.Context) {
 	memberID := utils.MemberIDFromContext(c)
+	householdID := utils.HouseholdIDFromContext(c)
 
 	listID, err := strconv.ParseInt(c.Param("listId"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid list id"})
 		return
 	}
-	householdID, err := strconv.ParseInt(c.Param("householdId"), 10, 64)
+	householdIDParam, err := strconv.ParseInt(c.Param("householdId"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid household id"})
+		return
+	}
+	if householdIDParam != householdID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 		return
 	}
 	itemID, err := strconv.ParseInt(c.Param("itemId"), 10, 64)
@@ -83,6 +93,18 @@ func (s *ItemService) removeItemHandler(c *gin.Context) {
 }
 
 func (s *ItemService) getItemsHandler(c *gin.Context) {
+	householdID := utils.HouseholdIDFromContext(c)
+
+	householdIDParam, err := strconv.ParseInt(c.Param("householdId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid household id"})
+		return
+	}
+	if householdIDParam != householdID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
+		return
+	}
+
 	listID, err := strconv.ParseInt(c.Param("listId"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid list id"})

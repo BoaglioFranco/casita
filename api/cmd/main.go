@@ -7,9 +7,11 @@ import (
 	"os"
 
 	"github.com/BoaglioFranco/groceriesList/api/internal/database"
+	"github.com/BoaglioFranco/groceriesList/api/internal/households"
 	"github.com/BoaglioFranco/groceriesList/api/internal/items"
 	"github.com/BoaglioFranco/groceriesList/api/internal/lists"
 	"github.com/BoaglioFranco/groceriesList/api/internal/middleware"
+	"github.com/BoaglioFranco/groceriesList/api/internal/notifications"
 	"github.com/SherClockHolmes/webpush-go"
 	"github.com/gin-gonic/gin"
 )
@@ -28,28 +30,6 @@ func demo(router *gin.Engine, vapidPublicKey string, vapidPrivateKey string, cur
 		c.JSON(http.StatusOK, gin.H{
 			"response": "world",
 		})
-	})
-
-	router.GET("/vapid-public-key", func(c *gin.Context) {
-		if vapidPublicKey == "" {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": "VAPID public key not set",
-			})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{
-			"publicKey": vapidPublicKey,
-		})
-	})
-
-	router.POST("/subscribe", func(c *gin.Context) {
-		var subscription webpush.Subscription
-		if err := c.ShouldBindJSON(&subscription); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid subscription data"})
-			return
-		}
-		currentSubscription = &subscription
-		c.Status(http.StatusOK)
 	})
 
 	router.POST("/send-test", func(c *gin.Context) {
@@ -113,13 +93,18 @@ func main() {
 	}
 	defer db.Close()
 
+	notificationsService := notifications.NewNotificationService(db, vapidPublicKey, vapidPrivateKey)
 	listsService := lists.NewListService(db)
-	itemsService := items.NewItemService(db)
+	itemsService := items.NewItemService(db, notificationsService)
+	householdStore := households.NewStore(db)
+
+	notificationsService.SetupPublicNotificationRoutes(router)
 
 	protectedRoutes := router.Group("/")
-	protectedRoutes.Use(middleware.RequireMember())
+	protectedRoutes.Use(middleware.RequireMember(householdStore))
 	listsService.SetupListRoutes(protectedRoutes)
 	itemsService.SetupItemRoutes(protectedRoutes)
+	notificationsService.SetupNotificationRoutes(protectedRoutes)
 
 	port := os.Getenv("PORT")
 	if port == "" {

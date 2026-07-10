@@ -6,14 +6,16 @@ import (
 
 	"github.com/BoaglioFranco/groceriesList/api/internal/activity"
 	"github.com/BoaglioFranco/groceriesList/api/internal/database"
+	"github.com/BoaglioFranco/groceriesList/api/internal/notifications"
 )
 
 var ErrItemNotFound = errors.New("item not found")
 
 type ItemService struct {
-	db            *database.Database
-	store         *ItemStore
-	activityStore *activity.ActivityStore
+	db                  *database.Database
+	store               *ItemStore
+	activityStore       *activity.ActivityStore
+	notificationService *notifications.NotificationService
 }
 
 type Item struct {

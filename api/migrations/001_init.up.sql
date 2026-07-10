@@ -43,6 +43,18 @@ CREATE TABLE push_subscriptions (
   FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE
 );
 
+ CREATE TABLE list_notification_subscriptions (
+    id INTEGER PRIMARY KEY,
+    list_id INTEGER NOT NULL,
+    member_id INTEGER NOT NULL,
+    push_subscription_id INTEGER NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    UNIQUE (list_id, member_id, push_subscription_id),
+    FOREIGN KEY (list_id) REFERENCES lists(id) ON DELETE CASCADE,
+    FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE,
+    FOREIGN KEY (push_subscription_id) REFERENCES push_subscriptions(id) ON DELETE CASCADE
+  );
+
 CREATE TABLE activity_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   household_id INTEGER NOT NULL,

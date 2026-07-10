@@ -5,10 +5,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/BoaglioFranco/groceriesList/api/internal/households"
 	"github.com/gin-gonic/gin"
 )
 
-func RequireMember() gin.HandlerFunc {
+func RequireMember(householdStore *households.HouseholdStore) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if !strings.HasPrefix(authHeader, "Bearer ") {
@@ -25,7 +26,15 @@ func RequireMember() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("member_id", memberID)
+		member, err := householdStore.GetMember(c.Request.Context(), memberID)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid member id"})
+			c.Abort()
+			return
+		}
+
+		c.Set("member_id", member.ID)
+		c.Set("household_id", member.HouseholdID)
 		c.Next()
 	}
 }

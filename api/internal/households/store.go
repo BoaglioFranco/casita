@@ -38,3 +38,21 @@ func (s *HouseholdStore) InsertMember(ctx context.Context, params InsertMemberPa
 
 	return nil
 }
+
+func (s *HouseholdStore) GetMember(ctx context.Context, memberID int64) (Member, error) {
+	query := `
+		SELECT id, household_id, name
+		FROM members
+		WHERE id = ?
+	`
+
+	members := make([]Member, 0, 1)
+	if err := s.db.SelectContext(ctx, &members, query, memberID); err != nil {
+		return Member{}, fmt.Errorf("unable to retrieve member: %w", err)
+	}
+	if len(members) == 0 {
+		return Member{}, fmt.Errorf("member not found")
+	}
+
+	return members[0], nil
+}
