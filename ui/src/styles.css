@@ -25,13 +25,17 @@ input {
   min-height: 100vh;
 }
 
+.auth-shell {
+  display: grid;
+  place-items: center;
+}
+
 .page-title {
   font-size: clamp(2rem, 5vw, 3rem);
   line-height: 1;
   letter-spacing: 0;
 }
 
-.api-input,
 .new-item-input {
   flex: 1;
   min-width: 0;
@@ -68,7 +72,6 @@ input {
 }
 
 @media (max-width: 640px) {
-  .api-input,
   .new-item-input {
     flex-basis: 100%;
   }

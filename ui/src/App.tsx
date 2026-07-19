@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import {
   ActionIcon,
   Alert,
@@ -9,6 +9,7 @@ import {
   Group,
   Loader,
   Paper,
+  PasswordInput,
   Stack,
   Text,
   TextInput,
@@ -19,18 +20,18 @@ import {
   Bell,
   BellRing,
   Check,
+  LockKeyhole,
+  LogIn,
+  Mail,
   Plus,
   RefreshCcw,
-  Send,
   ShoppingBasket,
   Trash2,
-  Wifi,
 } from 'lucide-react';
 
 const DEMO_HOUSEHOLD_ID = 1;
 const DEMO_LIST_ID = 1;
-const DEMO_MEMBER_ID = 1;
-const API_URL_STORAGE_KEY = 'groceries-demo-api-url';
+const API_URL = '/api';
 
 type GroceryItem = {
   id: number;
@@ -55,17 +56,6 @@ type RawGroceryItem = {
   updatedAt?: string;
   UpdatedAt?: string;
 };
-
-function authHeaders(extraHeaders: HeadersInit = {}): HeadersInit {
-  return {
-    ...extraHeaders,
-    Authorization: `Bearer ${DEMO_MEMBER_ID}`,
-  };
-}
-
-function normalizeApiUrl(value: string) {
-  return value.trim().replace(/\/$/, '');
-}
 
 function normalizeItems(data: unknown): GroceryItem[] {
   const rawItems = Array.isArray(data)
@@ -110,9 +100,10 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 export function App() {
-  const [apiUrl, setApiUrl] = useState(() => {
-    return localStorage.getItem(API_URL_STORAGE_KEY) ?? 'http://localhost:2345';
-  });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [items, setItems] = useState<GroceryItem[]>([]);
   const [newItemName, setNewItemName] = useState('');
   const [status, setStatus] = useState('Ready.');
@@ -121,11 +112,9 @@ export function App() {
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [deletingItemId, setDeletingItemId] = useState<number | null>(null);
   const [isEnablingNotifications, setIsEnablingNotifications] = useState(false);
-  const [isSendingTestPush, setIsSendingTestPush] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
-  const normalizedApiUrl = useMemo(() => normalizeApiUrl(apiUrl), [apiUrl]);
-  const itemsUrl = `${normalizedApiUrl}/households/${DEMO_HOUSEHOLD_ID}/lists/${DEMO_LIST_ID}/items`;
+  const itemsUrl = `${API_URL}/households/${DEMO_HOUSEHOLD_ID}/lists/${DEMO_LIST_ID}/items`;
 
   async function loadItems() {
     setIsLoadingItems(true);
@@ -134,8 +123,15 @@ export function App() {
 
     try {
       const response = await fetch(itemsUrl, {
-        headers: authHeaders(),
+        credentials: 'include',
       });
+
+      if (response.status === 401) {
+        setItems([]);
+        setIsAuthenticated(false);
+        setStatus('Sign in to continue.');
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(`List request failed with ${response.status}`);
@@ -144,6 +140,7 @@ export function App() {
       const data = await response.json();
       const nextItems = normalizeItems(data);
       setItems(nextItems);
+      setIsAuthenticated(true);
       setStatus(`${nextItems.length} item${nextItems.length === 1 ? '' : 's'} loaded.`);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unable to load groceries.';
@@ -152,6 +149,42 @@ export function App() {
       setStatus(message);
     } finally {
       setIsLoadingItems(false);
+    }
+  }
+
+  async function login(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsLoggingIn(true);
+    setError(null);
+    setStatus('Signing in...');
+
+    try {
+      const response = await fetch(`${API_URL}/login`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
+
+      if (response.status === 401) {
+        throw new Error('Invalid email or password.');
+      }
+      if (!response.ok) {
+        throw new Error(`Login failed with ${response.status}`);
+      }
+
+      setPassword('');
+      setIsAuthenticated(true);
+      await loadItems();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unable to sign in.';
+      setIsAuthenticated(false);
+      setError(message);
+      setStatus(message);
+    } finally {
+      setIsLoggingIn(false);
     }
   }
 
@@ -170,9 +203,10 @@ export function App() {
     try {
       const response = await fetch(itemsUrl, {
         method: 'POST',
-        headers: authHeaders({
+        credentials: 'include',
+        headers: {
           'Content-Type': 'application/json',
-        }),
+        },
         body: JSON.stringify({ name }),
       });
 
@@ -199,7 +233,7 @@ export function App() {
     try {
       const response = await fetch(`${itemsUrl}/${item.id}`, {
         method: 'DELETE',
-        headers: authHeaders(),
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -217,7 +251,7 @@ export function App() {
   }
 
   async function getVapidPublicKey() {
-    const response = await fetch(`${normalizedApiUrl}/vapid-public-key`);
+    const response = await fetch(`${API_URL}/vapid-public-key`);
     if (!response.ok) {
       throw new Error(`VAPID key request failed with ${response.status}`);
     }
@@ -257,13 +291,17 @@ export function App() {
       applicationServerKey: urlBase64ToUint8Array(publicKey),
     });
 
-    const response = await fetch(`${normalizedApiUrl}/subscribe`, {
-      method: 'POST',
-      headers: authHeaders({
-        'Content-Type': 'application/json',
-      }),
-      body: JSON.stringify(subscription),
-    });
+    const response = await fetch(
+      `${API_URL}/households/${DEMO_HOUSEHOLD_ID}/notifications/subscribe`,
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(subscription),
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Subscription save failed with ${response.status}`);
@@ -288,37 +326,74 @@ export function App() {
     }
   }
 
-  async function sendTestPush() {
-    setIsSendingTestPush(true);
-    setError(null);
-    setStatus('Sending test push...');
-
-    try {
-      const response = await fetch(`${normalizedApiUrl}/send-test`, {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        throw new Error(`Test push failed with ${response.status}`);
-      }
-
-      setStatus('Test push requested.');
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unable to send test push.';
-      setError(message);
-      setStatus(message);
-    } finally {
-      setIsSendingTestPush(false);
-    }
-  }
-
-  useEffect(() => {
-    localStorage.setItem(API_URL_STORAGE_KEY, normalizedApiUrl);
-  }, [normalizedApiUrl]);
-
   useEffect(() => {
     void loadItems();
   }, [itemsUrl]);
+
+  if (isAuthenticated === null) {
+    return (
+      <main className="app-shell auth-shell">
+        <Loader color="green" />
+      </main>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <main className="app-shell">
+        <Container size={420} px="md" py={{ base: 'xl', sm: 80 }}>
+          <Stack gap="lg">
+            <div>
+              <Badge variant="light" color="green" radius="sm" mb="xs">
+                Home
+              </Badge>
+              <Title order={1} className="page-title">
+                Groceries
+              </Title>
+            </div>
+
+            <Paper withBorder p="lg" radius="sm">
+              <form onSubmit={login}>
+                <Stack gap="md">
+                  <TextInput
+                    label="Email"
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.currentTarget.value)}
+                    leftSection={<Mail size={16} />}
+                    required
+                    autoComplete="email"
+                  />
+                  <PasswordInput
+                    label="Password"
+                    value={password}
+                    onChange={(event) => setPassword(event.currentTarget.value)}
+                    leftSection={<LockKeyhole size={16} />}
+                    required
+                    autoComplete="current-password"
+                  />
+
+                  {error && (
+                    <Alert color="red" variant="light" radius="sm">
+                      {error}
+                    </Alert>
+                  )}
+
+                  <Button type="submit" leftSection={<LogIn size={16} />} loading={isLoggingIn}>
+                    Sign in
+                  </Button>
+                </Stack>
+              </form>
+            </Paper>
+
+            <Text role="status" c="dimmed" size="sm">
+              {status}
+            </Text>
+          </Stack>
+        </Container>
+      </main>
+    );
+  }
 
   return (
     <main className="app-shell">
@@ -355,40 +430,16 @@ export function App() {
 
           <Paper withBorder p="md" radius="sm">
             <Stack gap="sm">
-              <Group justify="space-between" align="end" gap="sm">
-                <TextInput
-                  className="api-input"
-                  label="API"
-                  value={apiUrl}
-                  onChange={(event) => setApiUrl(event.currentTarget.value)}
-                  leftSection={<Wifi size={16} />}
-                />
-
-                <Group gap="xs" wrap="nowrap">
-                  <Button
-                    variant={notificationsEnabled ? 'light' : 'outline'}
-                    color={notificationsEnabled ? 'green' : 'gray'}
-                    leftSection={notificationsEnabled ? <BellRing size={16} /> : <Bell size={16} />}
-                    loading={isEnablingNotifications}
-                    onClick={handleEnableNotifications}
-                  >
-                    {notificationsEnabled ? 'Enabled' : 'Enable'}
-                  </Button>
-
-                  <Tooltip label="Send test push">
-                    <ActionIcon
-                      aria-label="Send test push"
-                      variant="outline"
-                      color="gray"
-                      size="lg"
-                      loading={isSendingTestPush}
-                      disabled={!notificationsEnabled}
-                      onClick={sendTestPush}
-                    >
-                      <Send size={18} />
-                    </ActionIcon>
-                  </Tooltip>
-                </Group>
+              <Group justify="flex-end" align="end" gap="sm">
+                <Button
+                  variant={notificationsEnabled ? 'light' : 'outline'}
+                  color={notificationsEnabled ? 'green' : 'gray'}
+                  leftSection={notificationsEnabled ? <BellRing size={16} /> : <Bell size={16} />}
+                  loading={isEnablingNotifications}
+                  onClick={handleEnableNotifications}
+                >
+                  {notificationsEnabled ? 'Enabled' : 'Enable'}
+                </Button>
               </Group>
             </Stack>
           </Paper>

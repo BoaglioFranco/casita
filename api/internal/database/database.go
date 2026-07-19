@@ -15,6 +15,7 @@ type Database struct {
 
 type Executor interface {
 	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+	GetContext(ctx context.Context, dest any, query string, args ...any) error
 	SelectContext(ctx context.Context, dest any, query string, args ...any) error
 }
 
@@ -53,6 +54,14 @@ func (d *Database) ExecContext(ctx context.Context, query string, args ...any) (
 	}
 
 	return d.db.ExecContext(ctx, query, args...)
+}
+
+func (d *Database) GetContext(ctx context.Context, dest any, query string, args ...any) error {
+	if d == nil || d.db == nil {
+		return fmt.Errorf("database is not initialized")
+	}
+
+	return d.db.GetContext(ctx, dest, query, args...)
 }
 
 func (d *Database) SelectContext(ctx context.Context, dest any, query string, args ...any) error {

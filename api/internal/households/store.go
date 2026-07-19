@@ -2,6 +2,8 @@ package households
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/BoaglioFranco/groceriesList/api/internal/database"
@@ -39,7 +41,7 @@ func (s *HouseholdStore) InsertMember(ctx context.Context, params InsertMemberPa
 	return nil
 }
 
-func (s *HouseholdStore) GetMember(ctx context.Context, memberID int64) (Member, error) {
+func (s *HouseholdStore) GetMember(ctx context.Context, memberID int64) (*Member, error) {
 	query := `
 		SELECT id, household_id, name
 		FROM members
@@ -48,11 +50,25 @@ func (s *HouseholdStore) GetMember(ctx context.Context, memberID int64) (Member,
 
 	members := make([]Member, 0, 1)
 	if err := s.db.SelectContext(ctx, &members, query, memberID); err != nil {
-		return Member{}, fmt.Errorf("unable to retrieve member: %w", err)
+		return nil, fmt.Errorf("unable to retrieve member: %w", err)
 	}
 	if len(members) == 0 {
-		return Member{}, fmt.Errorf("member not found")
+		return nil, fmt.Errorf("member not found")
 	}
 
-	return members[0], nil
+	return &members[0], nil
+}
+
+func (s *HouseholdStore) MemberByUserID(ctx context.Context, userID int64, househouldID int64) (*Member, error) {
+	query := `SELECT id, household_id, name FROM members WHERE user_id = ? AND household_id = ?`
+	var member Member
+	if err := s.db.GetContext(ctx, &member, query, userID, househouldID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrMemberNotFound
+		}
+
+		return nil, fmt.Errorf("unable to retrieve member: %w", err)
+	}
+
+	return &member, nil
 }

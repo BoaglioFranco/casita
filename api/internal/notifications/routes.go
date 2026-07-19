@@ -7,5 +7,5 @@ func (s *NotificationService) SetupPublicNotificationRoutes(router gin.IRoutes) 
 }
 
 func (s *NotificationService) SetupNotificationRoutes(router gin.IRoutes) {
-	router.POST("/subscribe", s.subscribeHandler)
+	router.POST("/notifications/subscribe", s.subscribeHandler)
 }

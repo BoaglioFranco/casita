@@ -1,0 +1,11 @@
+{
+  "files.associations": {
+    "*.sql": "sql"
+  },
+  "sqlfluff.path": ["/home/franco/.local/bin/sqlfluff"],
+  "sqlfluff.diagnosticSeverity": "error",
+  "[sql]": {
+    "editor.defaultFormatter": "xsw.vscode-sqlfluff-lsp",
+    "editor.formatOnSave": true
+  }
+}
