@@ -1,3 +1,8 @@
+---
+date: 2026-10-19
+status:
+---
+
 # Raspberry Pi deployment plan
 
 ## Purpose
