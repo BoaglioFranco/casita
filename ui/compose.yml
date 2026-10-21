@@ -1,13 +1,17 @@
 services:
   api:
     build: ../api
+    environment:
+      - DB_PATH=/data/groceries.db
     volumes:
       - sqlite-data:/data 
+    restart: unless-stopped
   ui:
     build: .
     ports:
       - 8080:80
     depends_on: 
       - api
+    restart: unless-stopped
 volumes: 
   sqlite-data: 
