@@ -1,0 +1,10 @@
+services:
+  api:
+    build: ../api
+  ui:
+    build: .
+    ports:
+      - 8080:80
+    depends_on: 
+      - api
+    
