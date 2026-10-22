@@ -3,6 +3,8 @@ name: ui
 services:
   api:
     build: ./api
+    env_file:
+      - ./.env
     environment:
       - DB_PATH=/data/groceries.db
     volumes:
