@@ -5,7 +5,9 @@ COPY go.mod go.sum ./
 RUN go mod download 
 
 COPY . . 
-RUN mkdir -p /out && go build -o /out/api ./cmd
+RUN mkdir -p /out \
+    && go build -o /out/api ./cmd \
+    && go build -o /out/create-user ./cmd/create-user
 
 FROM debian:bookworm-slim as runtime
 
@@ -15,8 +17,7 @@ RUN apt-get update \
     
 COPY migrations /app/migrations
 
-
 COPY --from=build /out/api /app/api
-
+COPY --from=build /out/create-user /app/create-user
 
 CMD ["/app/api"]

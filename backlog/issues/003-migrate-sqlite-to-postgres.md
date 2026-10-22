@@ -5,7 +5,7 @@ priority: medium
 type: maintenance
 created: 2026-10-21
 files:
-  - ui/compose.yml
+  - compose.yml
   - api/internal/database/database.go
   - api/migrations/001_init.up.sql
   - api/migrations/002_seed_demo.up.sql
