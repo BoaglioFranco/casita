@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/BoaglioFranco/groceriesList/api/internal/database"
@@ -66,7 +67,11 @@ func (s *NotificationService) sendNotification(ctx context.Context, subscription
 		},
 	)
 	if err != nil {
-		return err
+		var urlErr *url.Error
+		if errors.As(err, &urlErr) {
+			return fmt.Errorf("send push request: %w", urlErr.Err)
+		}
+		return fmt.Errorf("send push request: %w", err)
 	}
 	defer response.Body.Close()
 
