@@ -43,7 +43,7 @@ func (s *ItemService) CreateItem(ctx context.Context, params CreateItemParams) e
 		return err
 	}
 
-	err = s.notificationService.NotifyMembers(ctx, params.HouseholdID, notifications.Notification{
+	err = s.notificationService.NotifyOtherMembers(ctx, params.HouseholdID, params.ActorMemberID, notifications.Notification{
 		Title: "Item created",
 		Body:  fmt.Sprintf("%s added to the list", params.Name),
 	})
@@ -83,7 +83,7 @@ func (s *ItemService) DeleteItem(ctx context.Context, params DeleteItemParams) e
 	if err != nil {
 		return err
 	}
-	err = s.notificationService.NotifyMembers(ctx, params.HouseholdID, notifications.Notification{
+	err = s.notificationService.NotifyOtherMembers(ctx, params.HouseholdID, params.ActorMemberID, notifications.Notification{
 		Title: "Item deleted",
 		Body:  fmt.Sprintf("%s removed from the list", itemName),
 	})

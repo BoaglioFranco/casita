@@ -17,7 +17,7 @@ const (
 	testAuth   = "zqbxT6JKstKSY9JKibZLSQ"
 )
 
-func TestNotifyMembersContinuesAfterFailureAndDeletesExpiredSubscription(t *testing.T) {
+func TestNotifyOtherMembersExcludesActorContinuesAfterFailureAndDeletesExpiredSubscription(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -55,7 +55,7 @@ func TestNotifyMembersContinuesAfterFailureAndDeletesExpiredSubscription(t *test
 	t.Cleanup(pushServer.Close)
 
 	store := NewStore(db)
-	for memberID, endpoint := range []string{pushServer.URL + "/expired", pushServer.URL + "/current"} {
+	for memberID, endpoint := range []string{pushServer.URL + "/expired", pushServer.URL + "/current", pushServer.URL + "/actor"} {
 		err := store.StoreSubscription(ctx, StoreSubscriptionParams{
 			HouseholdId: 1,
 			MemberId:    int64(memberID + 1),
@@ -74,7 +74,7 @@ func TestNotifyMembersContinuesAfterFailureAndDeletesExpiredSubscription(t *test
 	}
 	service := NewNotificationService(db, publicKey, privateKey)
 
-	err = service.NotifyMembers(ctx, 1, Notification{Title: "Test", Body: "Test"})
+	err = service.NotifyOtherMembers(ctx, 1, 3, Notification{Title: "Test", Body: "Test"})
 	if err == nil || !strings.Contains(err.Error(), "410 Gone") {
 		t.Fatalf("expected a 410 delivery error, got %v", err)
 	}
@@ -86,8 +86,13 @@ func TestNotifyMembersContinuesAfterFailureAndDeletesExpiredSubscription(t *test
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(subscriptions) != 1 || subscriptions[0].Endpoint != pushServer.URL+"/current" {
-		t.Fatalf("expected only the current subscription to remain, got %#v", subscriptions)
+	if len(subscriptions) != 2 {
+		t.Fatalf("expected the current and actor subscriptions to remain, got %#v", subscriptions)
+	}
+	for _, subscription := range subscriptions {
+		if subscription.Endpoint == pushServer.URL+"/expired" {
+			t.Fatalf("expired subscription was not deleted: %#v", subscriptions)
+		}
 	}
 }
 

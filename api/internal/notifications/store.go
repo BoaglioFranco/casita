@@ -37,10 +37,29 @@ func (s *NotificationStore) DeleteSubscription(ctx context.Context, endpoint str
 	return err
 }
 
-func (s *NotificationStore) GetSubscriptionsByHousehold(ctx context.Context, householdId int64) ([]PushSubscription, error) {
-	query := `SELECT household_id, member_id, endpoint, p256dh, auth FROM push_subscriptions WHERE household_id = ?`
+func (s *NotificationStore) GetSubscriptionsByHousehold(ctx context.Context, householdID int64) ([]PushSubscription, error) {
+	query := `
+		SELECT household_id, member_id, endpoint, p256dh, auth
+		FROM push_subscriptions
+		WHERE household_id = ?
+	`
 	householdSubscriptions := []PushSubscription{}
-	err := s.db.SelectContext(ctx, &householdSubscriptions, query, householdId)
+	err := s.db.SelectContext(ctx, &householdSubscriptions, query, householdID)
+	if err != nil {
+		return nil, err
+	}
+
+	return householdSubscriptions, nil
+}
+
+func (s *NotificationStore) GetSubscriptionsForOtherMembers(ctx context.Context, householdID int64, actorMemberID int64) ([]PushSubscription, error) {
+	query := `
+		SELECT household_id, member_id, endpoint, p256dh, auth
+		FROM push_subscriptions
+		WHERE household_id = ? AND member_id != ?
+	`
+	householdSubscriptions := []PushSubscription{}
+	err := s.db.SelectContext(ctx, &householdSubscriptions, query, householdID, actorMemberID)
 	if err != nil {
 		return nil, err
 	}

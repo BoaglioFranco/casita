@@ -320,9 +320,37 @@ export function App() {
     }
   }
 
+  async function refreshNotificationsEnabled() {
+    if (
+      !('serviceWorker' in navigator) ||
+      !('PushManager' in window) ||
+      !('Notification' in window) ||
+      Notification.permission !== 'granted'
+    ) {
+      setNotificationsEnabled(false);
+      return;
+    }
+
+    try {
+      const registration = await navigator.serviceWorker.getRegistration();
+      const subscription = await registration?.pushManager.getSubscription();
+      setNotificationsEnabled(subscription != null);
+    } catch {
+      setNotificationsEnabled(false);
+    }
+  }
+
   useEffect(() => {
     void loadItems();
   }, [itemsUrl]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      void refreshNotificationsEnabled();
+    } else {
+      setNotificationsEnabled(false);
+    }
+  }, [isAuthenticated]);
 
   if (isAuthenticated === null) {
     return (

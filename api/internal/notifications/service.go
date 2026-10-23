@@ -28,8 +28,8 @@ func NewNotificationService(db *database.Database, vapidPublicKey string, vapidP
 	}
 }
 
-func (s *NotificationService) NotifyMembers(ctx context.Context, householdId int64, notification Notification) error {
-	subscriptions, err := s.store.GetSubscriptionsByHousehold(ctx, householdId)
+func (s *NotificationService) NotifyOtherMembers(ctx context.Context, householdID int64, actorMemberID int64, notification Notification) error {
+	subscriptions, err := s.store.GetSubscriptionsForOtherMembers(ctx, householdID, actorMemberID)
 	if err != nil {
 		return err
 	}
