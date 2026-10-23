@@ -1,4 +1,5 @@
 .env
+.cloudflared.env
 api/.env
 tmp/
 *.db
