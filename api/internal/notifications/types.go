@@ -1,10 +1,24 @@
 package notifications
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/SherClockHolmes/webpush-go"
 )
+
+type PushServiceError struct {
+	StatusCode int
+	Status     string
+	Detail     string
+}
+
+func (e *PushServiceError) Error() string {
+	if e.Detail == "" {
+		return fmt.Sprintf("push service returned %s", e.Status)
+	}
+	return fmt.Sprintf("push service returned %s: %s", e.Status, e.Detail)
+}
 
 type StoreSubscriptionParams struct {
 	HouseholdId int64

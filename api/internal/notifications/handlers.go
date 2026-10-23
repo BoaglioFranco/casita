@@ -29,12 +29,16 @@ func (s *NotificationService) subscribeHandler(c *gin.Context) {
 		return
 	}
 
-	s.store.StoreSubscription(c.Request.Context(), StoreSubscriptionParams{
+	if err := s.store.StoreSubscription(c.Request.Context(), StoreSubscriptionParams{
 		HouseholdId: householdID,
 		MemberId:    memberID,
 		Endpoint:    subscription.Endpoint,
 		P256dh:      subscription.Keys.P256dh,
 		Auth:        subscription.Keys.Auth,
-	})
+	}); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save push subscription"})
+		return
+	}
+
 	c.Status(http.StatusOK)
 }

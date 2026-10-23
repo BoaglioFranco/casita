@@ -280,12 +280,6 @@ export function App() {
 
     const registration = await navigator.serviceWorker.register('/sw.js');
     const publicKey = await getVapidPublicKey();
-    const existingSubscription = await registration.pushManager.getSubscription();
-
-    if (existingSubscription) {
-      await existingSubscription.unsubscribe();
-    }
-
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(publicKey),
