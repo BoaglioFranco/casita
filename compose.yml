@@ -17,5 +17,13 @@ services:
     depends_on:
       - api
     restart: unless-stopped
+  cloudflared:
+    image: cloudflare/cloudflared:2026.10.3
+    command: ["tunnel", "run"]
+    env_file:
+      - .cloudflred.env
+    depends_on:
+      - ui
+    restart: unless-stopped
 volumes:
   sqlite-data:
