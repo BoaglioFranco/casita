@@ -47,7 +47,7 @@ func (s *NotificationService) sendNotification(subscription PushSubscription, no
 		payload,
 		subscription.ToWebpushSubscription(),
 		&webpush.Options{
-			Subscriber:      "mailto:test@example.com",
+			Subscriber:      "francoboaglio@gmail.com",
 			VAPIDPublicKey:  s.vapidPublicKey,
 			VAPIDPrivateKey: s.vapidPrivateKey,
 			TTL:             60,
