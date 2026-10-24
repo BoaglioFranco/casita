@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (s *ItemService) createItemHandler(c *gin.Context) {
+func (service *ItemService) createItemHandler(c *gin.Context) {
 	memberId := utils.MemberIDFromContext(c)
 	householdID := utils.HouseholdIDFromContext(c)
 	params := &CreateItemPayload{}
@@ -35,7 +35,7 @@ func (s *ItemService) createItemHandler(c *gin.Context) {
 		return
 	}
 
-	err = s.CreateItem(c.Request.Context(), CreateItemParams{
+	err = service.CreateItem(c.Request.Context(), CreateItemParams{
 		HouseholdID:   householdID,
 		ListID:        listID,
 		ActorMemberID: memberId,
@@ -50,7 +50,7 @@ func (s *ItemService) createItemHandler(c *gin.Context) {
 	c.Status(http.StatusCreated)
 }
 
-func (s *ItemService) removeItemHandler(c *gin.Context) {
+func (service *ItemService) removeItemHandler(c *gin.Context) {
 	memberID := utils.MemberIDFromContext(c)
 	householdID := utils.HouseholdIDFromContext(c)
 
@@ -73,7 +73,7 @@ func (s *ItemService) removeItemHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item id"})
 		return
 	}
-	err = s.DeleteItem(c.Request.Context(), DeleteItemParams{
+	err = service.DeleteItem(c.Request.Context(), DeleteItemParams{
 		HouseholdID:   householdID,
 		ListID:        listID,
 		ItemID:        itemID,
@@ -92,7 +92,7 @@ func (s *ItemService) removeItemHandler(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func (s *ItemService) getItemsHandler(c *gin.Context) {
+func (service *ItemService) getItemsHandler(c *gin.Context) {
 	householdID := utils.HouseholdIDFromContext(c)
 
 	householdIDParam, err := strconv.ParseInt(c.Param("householdId"), 10, 64)
@@ -110,7 +110,7 @@ func (s *ItemService) getItemsHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid list id"})
 		return
 	}
-	items, err := s.store.GetItemsFromList(c.Request.Context(), listID)
+	items, err := service.itemStore.GetItemsFromList(c.Request.Context(), listID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

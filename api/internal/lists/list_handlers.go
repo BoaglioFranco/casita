@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (s *ListService) createListHandler(c *gin.Context) {
+func (service *ListService) createListHandler(c *gin.Context) {
 	params := &CreateListPayload{}
 	householdID := utils.HouseholdIDFromContext(c)
 
@@ -28,7 +28,7 @@ func (s *ListService) createListHandler(c *gin.Context) {
 		return
 	}
 
-	err = s.store.InsertList(c.Request.Context(), InsertListParams{HouseholdID: householdID, Name: params.Name})
+	err = service.listStore.InsertList(c.Request.Context(), InsertListParams{HouseholdID: householdID, Name: params.Name})
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

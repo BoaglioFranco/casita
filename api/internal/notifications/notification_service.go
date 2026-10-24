@@ -15,31 +15,31 @@ import (
 )
 
 type NotificationService struct {
-	store           *NotificationStore
-	vapidPublicKey  string
-	vapidPrivateKey string
+	notificationStore *NotificationStore
+	vapidPublicKey    string
+	vapidPrivateKey   string
 }
 
 func NewNotificationService(db *database.Database, vapidPublicKey string, vapidPrivateKey string) *NotificationService {
 	return &NotificationService{
-		store:           NewStore(db),
-		vapidPublicKey:  vapidPublicKey,
-		vapidPrivateKey: vapidPrivateKey,
+		notificationStore: NewNotificationStore(db),
+		vapidPublicKey:    vapidPublicKey,
+		vapidPrivateKey:   vapidPrivateKey,
 	}
 }
 
-func (s *NotificationService) NotifyOtherMembers(ctx context.Context, householdID int64, actorMemberID int64, notification Notification) error {
-	subscriptions, err := s.store.GetSubscriptionsForOtherMembers(ctx, householdID, actorMemberID)
+func (service *NotificationService) NotifyOtherMembers(ctx context.Context, householdID int64, actorMemberID int64, notification Notification) error {
+	subscriptions, err := service.notificationStore.GetSubscriptionsForOtherMembers(ctx, householdID, actorMemberID)
 	if err != nil {
 		return err
 	}
 
 	var deliveryErrors []error
 	for _, sub := range subscriptions {
-		if err := s.sendNotification(ctx, sub, notification); err != nil {
+		if err := service.sendNotification(ctx, sub, notification); err != nil {
 			var pushErr *PushServiceError
 			if errors.As(err, &pushErr) && (pushErr.StatusCode == http.StatusNotFound || pushErr.StatusCode == http.StatusGone) {
-				if deleteErr := s.store.DeleteSubscription(ctx, sub.Endpoint); deleteErr != nil {
+				if deleteErr := service.notificationStore.DeleteSubscription(ctx, sub.Endpoint); deleteErr != nil {
 					deliveryErrors = append(deliveryErrors, fmt.Errorf("remove expired push subscription: %w", deleteErr))
 				}
 			}
@@ -50,7 +50,7 @@ func (s *NotificationService) NotifyOtherMembers(ctx context.Context, householdI
 	return errors.Join(deliveryErrors...)
 }
 
-func (s *NotificationService) sendNotification(ctx context.Context, subscription PushSubscription, notification Notification) error {
+func (service *NotificationService) sendNotification(ctx context.Context, subscription PushSubscription, notification Notification) error {
 	payload, err := json.Marshal(notification)
 	if err != nil {
 		return err
@@ -61,8 +61,8 @@ func (s *NotificationService) sendNotification(ctx context.Context, subscription
 		subscription.ToWebpushSubscription(),
 		&webpush.Options{
 			Subscriber:      "francoboaglio@gmail.com",
-			VAPIDPublicKey:  s.vapidPublicKey,
-			VAPIDPrivateKey: s.vapidPrivateKey,
+			VAPIDPublicKey:  service.vapidPublicKey,
+			VAPIDPrivateKey: service.vapidPrivateKey,
 			TTL:             24 * 60 * 60,
 		},
 	)

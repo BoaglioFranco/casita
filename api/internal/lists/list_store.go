@@ -17,10 +17,10 @@ func NewListStore(db *database.Database) *ListStore {
 	}
 }
 
-func (s *ListStore) InsertList(ctx context.Context, params InsertListParams) error {
+func (store *ListStore) InsertList(ctx context.Context, params InsertListParams) error {
 	query := `INSERT INTO lists (household_id, name) VALUES ($1, $2)`
 
-	_, err := s.db.ExecContext(ctx, query, params.HouseholdID, params.Name)
+	_, err := store.db.ExecContext(ctx, query, params.HouseholdID, params.Name)
 	if err != nil {
 		return fmt.Errorf("unable to insert list: %w", err)
 	}

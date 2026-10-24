@@ -15,7 +15,7 @@ import (
 
 func NewAuthService(db *database.Database) *AuthService {
 	return &AuthService{
-		store: NewAuthStore(db),
+		authStore: NewAuthStore(db),
 	}
 }
 
@@ -34,8 +34,8 @@ func hashRawSessionToken(rawToken string) (tokenHash string) {
 	return hex.EncodeToString(hash[:])
 }
 
-func (s *AuthService) Login(ctx context.Context, email string, password string) (token string, err error) {
-	user, err := s.store.UserFromEmail(ctx, email)
+func (service *AuthService) Login(ctx context.Context, email string, password string) (token string, err error) {
+	user, err := service.authStore.UserFromEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, ErrUserNotFound) {
 			return "", ErrInvalidCredentials
@@ -53,7 +53,7 @@ func (s *AuthService) Login(ctx context.Context, email string, password string) 
 	if err != nil {
 		return "", err
 	}
-	err = s.store.CreateSession(ctx, CreateSessionParams{TokenHash: hashedToken, UserID: user.ID, ExpiresAt: time.Now().UTC().AddDate(1, 0, 0)})
+	err = service.authStore.CreateSession(ctx, CreateSessionParams{TokenHash: hashedToken, UserID: user.ID, ExpiresAt: time.Now().UTC().AddDate(1, 0, 0)})
 	if err != nil {
 		return "", err
 	}
@@ -61,9 +61,9 @@ func (s *AuthService) Login(ctx context.Context, email string, password string) 
 	return rawToken, nil
 }
 
-func (s *AuthService) AuthenticateSession(ctx context.Context, token string) (*Session, error) {
+func (service *AuthService) AuthenticateSession(ctx context.Context, token string) (*Session, error) {
 	tokenHash := hashRawSessionToken(token)
-	userSession, err := s.store.GetSession(ctx, tokenHash)
+	userSession, err := service.authStore.GetSession(ctx, tokenHash)
 	if err != nil {
 		return nil, err
 	}

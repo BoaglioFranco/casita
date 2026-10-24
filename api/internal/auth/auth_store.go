@@ -19,9 +19,9 @@ func NewAuthStore(db *database.Database) *AuthStore {
 	}
 }
 
-func (s *AuthStore) CreateSession(ctx context.Context, params CreateSessionParams) error {
+func (store *AuthStore) CreateSession(ctx context.Context, params CreateSessionParams) error {
 	query := `INSERT INTO sessions (token_hash, user_id, expires_at) VALUES ($1, $2, $3)`
-	_, err := s.db.ExecContext(ctx, query, params.TokenHash, params.UserID, params.ExpiresAt)
+	_, err := store.db.ExecContext(ctx, query, params.TokenHash, params.UserID, params.ExpiresAt)
 
 	if err != nil {
 		return err
@@ -29,10 +29,10 @@ func (s *AuthStore) CreateSession(ctx context.Context, params CreateSessionParam
 	return nil
 }
 
-func (s *AuthStore) GetSession(ctx context.Context, tokenHash string) (*Session, error) {
+func (store *AuthStore) GetSession(ctx context.Context, tokenHash string) (*Session, error) {
 	query := `SELECT token_hash, user_id, expires_at, created_at FROM sessions WHERE token_hash = $1`
 	var session Session
-	if err := s.db.GetContext(ctx, &session, query, tokenHash); err != nil {
+	if err := store.db.GetContext(ctx, &session, query, tokenHash); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrSessionNotFound
 		}
@@ -41,10 +41,10 @@ func (s *AuthStore) GetSession(ctx context.Context, tokenHash string) (*Session,
 	return &session, nil
 }
 
-func (s *AuthStore) UserIDFromEmail(ctx context.Context, email string) (int64, error) {
+func (store *AuthStore) UserIDFromEmail(ctx context.Context, email string) (int64, error) {
 	query := `SELECT id FROM users WHERE email = $1`
 	var userID int64
-	if err := s.db.GetContext(ctx, &userID, query, email); err != nil {
+	if err := store.db.GetContext(ctx, &userID, query, email); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return 0, ErrUserNotFound
 		}
@@ -55,10 +55,10 @@ func (s *AuthStore) UserIDFromEmail(ctx context.Context, email string) (int64, e
 	return userID, nil
 }
 
-func (s *AuthStore) UserFromEmail(ctx context.Context, email string) (*User, error) {
+func (store *AuthStore) UserFromEmail(ctx context.Context, email string) (*User, error) {
 	query := `SELECT * FROM users WHERE email = $1`
 	var user User
-	if err := s.db.GetContext(ctx, &user, query, email); err != nil {
+	if err := store.db.GetContext(ctx, &user, query, email); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrUserNotFound
 		}
@@ -69,10 +69,10 @@ func (s *AuthStore) UserFromEmail(ctx context.Context, email string) (*User, err
 	return &user, nil
 }
 
-func (s *AuthStore) InsertUser(ctx context.Context, payload InsertUserParams) error {
+func (store *AuthStore) InsertUser(ctx context.Context, payload InsertUserParams) error {
 	query := `INSERT INTO users (email, password_hash) VALUES ($1, $2)`
 
-	_, err := s.db.ExecContext(ctx, query, payload.Email, payload.HashedPassword)
+	_, err := store.db.ExecContext(ctx, query, payload.Email, payload.HashedPassword)
 	if err != nil {
 		return err
 	}

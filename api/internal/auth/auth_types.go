@@ -11,7 +11,7 @@ var ErrInvalidCredentials = errors.New("invalid credentials")
 var ErrSessionExpired = errors.New("session expired")
 
 type AuthService struct {
-	store *AuthStore
+	authStore *AuthStore
 }
 
 type CreateSessionParams struct {

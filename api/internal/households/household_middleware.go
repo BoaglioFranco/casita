@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (s *HouseholdService) RequireMembership(c *gin.Context) {
+func (service *HouseholdService) RequireMembership(c *gin.Context) {
 	householdIDString := c.Param("householdId")
 	if householdIDString == "" {
 		c.AbortWithStatus(http.StatusUnauthorized)
@@ -21,7 +21,7 @@ func (s *HouseholdService) RequireMembership(c *gin.Context) {
 		return
 	}
 	userID := utils.UserIDFromContext(c)
-	member, err := s.store.MemberByUserID(c.Request.Context(), userID, householdID)
+	member, err := service.householdStore.MemberByUserID(c.Request.Context(), userID, householdID)
 	if err != nil {
 		if errors.Is(err, ErrMemberNotFound) {
 			c.AbortWithStatus(http.StatusUnauthorized)

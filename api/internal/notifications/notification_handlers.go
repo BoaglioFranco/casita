@@ -8,19 +8,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (s *NotificationService) publicVapidKeyHandler(c *gin.Context) {
-	if s.vapidPublicKey == "" {
+func (service *NotificationService) publicVapidKeyHandler(c *gin.Context) {
+	if service.vapidPublicKey == "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "VAPID public key not set",
 		})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"publicKey": s.vapidPublicKey,
+		"publicKey": service.vapidPublicKey,
 	})
 }
 
-func (s *NotificationService) subscribeHandler(c *gin.Context) {
+func (service *NotificationService) subscribeHandler(c *gin.Context) {
 	memberID := utils.MemberIDFromContext(c)
 	householdID := utils.HouseholdIDFromContext(c)
 	var subscription webpush.Subscription
@@ -29,7 +29,7 @@ func (s *NotificationService) subscribeHandler(c *gin.Context) {
 		return
 	}
 
-	if err := s.store.StoreSubscription(c.Request.Context(), StoreSubscriptionParams{
+	if err := service.notificationStore.StoreSubscription(c.Request.Context(), StoreSubscriptionParams{
 		HouseholdId: householdID,
 		MemberId:    memberID,
 		Endpoint:    subscription.Endpoint,

@@ -13,16 +13,16 @@ type HouseholdStore struct {
 	db *database.Database
 }
 
-func NewStore(db *database.Database) *HouseholdStore {
+func NewHouseholdStore(db *database.Database) *HouseholdStore {
 	return &HouseholdStore{
 		db: db,
 	}
 }
 
-func (s *HouseholdStore) InsertHousehold(ctx context.Context, name string) error {
+func (store *HouseholdStore) InsertHousehold(ctx context.Context, name string) error {
 	query := `INSERT INTO households (name) VALUES ($1)`
 
-	_, err := s.db.ExecContext(ctx, query, name)
+	_, err := store.db.ExecContext(ctx, query, name)
 
 	if err != nil {
 		return fmt.Errorf("unable to insert household: %w", err)
@@ -30,10 +30,10 @@ func (s *HouseholdStore) InsertHousehold(ctx context.Context, name string) error
 	return nil
 }
 
-func (s *HouseholdStore) InsertMember(ctx context.Context, params InsertMemberParams) error {
+func (store *HouseholdStore) InsertMember(ctx context.Context, params InsertMemberParams) error {
 	query := `INSERT INTO members (household_id, name) VALUES ($1, $2)`
 
-	_, err := s.db.ExecContext(ctx, query, params.HouseholdID, params.Name)
+	_, err := store.db.ExecContext(ctx, query, params.HouseholdID, params.Name)
 	if err != nil {
 		return fmt.Errorf("unable to insert member: %w", err)
 	}
@@ -41,7 +41,7 @@ func (s *HouseholdStore) InsertMember(ctx context.Context, params InsertMemberPa
 	return nil
 }
 
-func (s *HouseholdStore) GetMember(ctx context.Context, memberID int64) (*Member, error) {
+func (store *HouseholdStore) GetMember(ctx context.Context, memberID int64) (*Member, error) {
 	query := `
 		SELECT id, household_id, name
 		FROM members
@@ -49,7 +49,7 @@ func (s *HouseholdStore) GetMember(ctx context.Context, memberID int64) (*Member
 	`
 
 	members := make([]Member, 0, 1)
-	if err := s.db.SelectContext(ctx, &members, query, memberID); err != nil {
+	if err := store.db.SelectContext(ctx, &members, query, memberID); err != nil {
 		return nil, fmt.Errorf("unable to retrieve member: %w", err)
 	}
 	if len(members) == 0 {
@@ -59,10 +59,10 @@ func (s *HouseholdStore) GetMember(ctx context.Context, memberID int64) (*Member
 	return &members[0], nil
 }
 
-func (s *HouseholdStore) MemberByUserID(ctx context.Context, userID int64, househouldID int64) (*Member, error) {
+func (store *HouseholdStore) MemberByUserID(ctx context.Context, userID int64, househouldID int64) (*Member, error) {
 	query := `SELECT id, household_id, name FROM members WHERE user_id = $1 AND household_id = $2`
 	var member Member
-	if err := s.db.GetContext(ctx, &member, query, userID, househouldID); err != nil {
+	if err := store.db.GetContext(ctx, &member, query, userID, househouldID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrMemberNotFound
 		}

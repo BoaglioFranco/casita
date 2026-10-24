@@ -11,21 +11,21 @@ type ActivityStore struct {
 	db *database.Database
 }
 
-func NewStore(db *database.Database) *ActivityStore {
+func NewActivityStore(db *database.Database) *ActivityStore {
 	return &ActivityStore{
 		db: db,
 	}
 }
 
-func (s *ActivityStore) RecordActivity(ctx context.Context, params RecordActivityParams) error {
-	return s.recordActivity(ctx, s.db, params)
+func (store *ActivityStore) RecordActivity(ctx context.Context, params RecordActivityParams) error {
+	return store.recordActivity(ctx, store.db, params)
 }
 
-func (s *ActivityStore) RecordActivityTx(ctx context.Context, tx database.Executor, params RecordActivityParams) error {
-	return s.recordActivity(ctx, tx, params)
+func (store *ActivityStore) RecordActivityTx(ctx context.Context, tx database.Executor, params RecordActivityParams) error {
+	return store.recordActivity(ctx, tx, params)
 }
 
-func (s *ActivityStore) recordActivity(ctx context.Context, exec database.Executor, params RecordActivityParams) error {
+func (store *ActivityStore) recordActivity(ctx context.Context, exec database.Executor, params RecordActivityParams) error {
 	query := `
 		INSERT INTO activity_events (
 			event_type,

@@ -5,7 +5,7 @@ import "errors"
 var ErrMemberNotFound = errors.New("member not found")
 
 type HouseholdService struct {
-	store *HouseholdStore
+	householdStore *HouseholdStore
 }
 
 type InsertMemberParams struct {

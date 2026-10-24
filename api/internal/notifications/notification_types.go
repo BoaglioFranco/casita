@@ -54,12 +54,12 @@ type PushSubscription struct {
 	UpdatedAt   time.Time `db:"updated_at"`
 }
 
-func (s *PushSubscription) ToWebpushSubscription() *webpush.Subscription {
+func (subscription *PushSubscription) ToWebpushSubscription() *webpush.Subscription {
 	return &webpush.Subscription{
-		Endpoint: s.Endpoint,
+		Endpoint: subscription.Endpoint,
 		Keys: webpush.Keys{
-			Auth:   s.Auth,
-			P256dh: s.P256dh,
+			Auth:   subscription.Auth,
+			P256dh: subscription.P256dh,
 		},
 	}
 

@@ -11,21 +11,21 @@ type ItemStore struct {
 	db *database.Database
 }
 
-func NewStore(db *database.Database) *ItemStore {
+func NewItemStore(db *database.Database) *ItemStore {
 	return &ItemStore{
 		db: db,
 	}
 }
 
-func (s *ItemStore) InsertItem(ctx context.Context, params InsertItemParams) (int64, error) {
-	return s.insertItem(ctx, s.db, params)
+func (store *ItemStore) InsertItem(ctx context.Context, params InsertItemParams) (int64, error) {
+	return store.insertItem(ctx, store.db, params)
 }
 
-func (s *ItemStore) InsertItemTx(ctx context.Context, tx database.Executor, params InsertItemParams) (int64, error) {
-	return s.insertItem(ctx, tx, params)
+func (store *ItemStore) InsertItemTx(ctx context.Context, tx database.Executor, params InsertItemParams) (int64, error) {
+	return store.insertItem(ctx, tx, params)
 }
 
-func (s *ItemStore) insertItem(ctx context.Context, exec database.Executor, params InsertItemParams) (int64, error) {
+func (store *ItemStore) insertItem(ctx context.Context, exec database.Executor, params InsertItemParams) (int64, error) {
 	query := `INSERT INTO items (list_id, name, description) VALUES ($1, $2, $3) RETURNING id`
 
 	var itemID int64
@@ -37,15 +37,15 @@ func (s *ItemStore) insertItem(ctx context.Context, exec database.Executor, para
 	return itemID, nil
 }
 
-func (s *ItemStore) DeleteItem(ctx context.Context, itemID int64) error {
-	return s.deleteItem(ctx, s.db, itemID)
+func (store *ItemStore) DeleteItem(ctx context.Context, itemID int64) error {
+	return store.deleteItem(ctx, store.db, itemID)
 }
 
-func (s *ItemStore) DeleteItemTx(ctx context.Context, tx database.Executor, itemID int64) error {
-	return s.deleteItem(ctx, tx, itemID)
+func (store *ItemStore) DeleteItemTx(ctx context.Context, tx database.Executor, itemID int64) error {
+	return store.deleteItem(ctx, tx, itemID)
 }
 
-func (s *ItemStore) deleteItem(ctx context.Context, exec database.Executor, itemID int64) error {
+func (store *ItemStore) deleteItem(ctx context.Context, exec database.Executor, itemID int64) error {
 	query := `DELETE FROM items WHERE id = $1`
 
 	result, err := exec.ExecContext(ctx, query, itemID)
@@ -64,7 +64,7 @@ func (s *ItemStore) deleteItem(ctx context.Context, exec database.Executor, item
 	return nil
 }
 
-func (s *ItemStore) GetItemTx(ctx context.Context, tx database.Executor, itemID int64) (Item, error) {
+func (store *ItemStore) GetItemTx(ctx context.Context, tx database.Executor, itemID int64) (Item, error) {
 	query := `
 		SELECT id, list_id, name, description, created_at, updated_at
 		FROM items
@@ -82,7 +82,7 @@ func (s *ItemStore) GetItemTx(ctx context.Context, tx database.Executor, itemID 
 	return items[0], nil
 }
 
-func (s *ItemStore) GetItemsFromList(ctx context.Context, listID int64) ([]Item, error) {
+func (store *ItemStore) GetItemsFromList(ctx context.Context, listID int64) ([]Item, error) {
 	query := `
 		SELECT id, list_id, name, description, created_at, updated_at
 		FROM items
@@ -91,7 +91,7 @@ func (s *ItemStore) GetItemsFromList(ctx context.Context, listID int64) ([]Item,
 	`
 
 	items := make([]Item, 0)
-	if err := s.db.SelectContext(ctx, &items, query, listID); err != nil {
+	if err := store.db.SelectContext(ctx, &items, query, listID); err != nil {
 		return nil, fmt.Errorf("unable to retrieve items: %w", err)
 	}
 

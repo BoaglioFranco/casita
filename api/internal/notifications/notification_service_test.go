@@ -39,7 +39,7 @@ func TestNotifyOtherMembersExcludesActorContinuesAfterFailureAndDeletesExpiredSu
 	}))
 	t.Cleanup(pushServer.Close)
 
-	store := NewStore(db)
+	store := NewNotificationStore(db)
 	for memberID, endpoint := range []string{pushServer.URL + "/expired", pushServer.URL + "/current", pushServer.URL + "/actor"} {
 		err := store.StoreSubscription(ctx, StoreSubscriptionParams{
 			HouseholdId: 1,
@@ -87,7 +87,7 @@ func TestStoreSubscriptionUpdatesExistingEndpoint(t *testing.T) {
 	ctx := context.Background()
 	db := newPostgresTestDatabase(t, ctx)
 
-	store := NewStore(db)
+	store := NewNotificationStore(db)
 	first := StoreSubscriptionParams{HouseholdId: 1, MemberId: 1, Endpoint: "https://push.example.test/one", P256dh: "old", Auth: "old"}
 	if err := store.StoreSubscription(ctx, first); err != nil {
 		t.Fatal(err)

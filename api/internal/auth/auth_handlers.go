@@ -9,14 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (s *AuthService) loginHandler(c *gin.Context) {
+func (service *AuthService) loginHandler(c *gin.Context) {
 	var loginInfo LoginPayload
 	err := c.ShouldBindJSON(&loginInfo)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request parameters"})
 		return
 	}
-	token, err := s.Login(c.Request.Context(), loginInfo.Email, loginInfo.Password)
+	token, err := service.Login(c.Request.Context(), loginInfo.Email, loginInfo.Password)
 	if errors.Is(err, ErrInvalidCredentials) {
 		c.Status(http.StatusUnauthorized)
 		return

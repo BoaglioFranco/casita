@@ -1,7 +1,7 @@
 package lists
 
 type ListService struct {
-	store *ListStore
+	listStore *ListStore
 }
 
 // Handlers

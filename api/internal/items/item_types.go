@@ -13,7 +13,7 @@ var ErrItemNotFound = errors.New("item not found")
 
 type ItemService struct {
 	db                  *database.Database
-	store               *ItemStore
+	itemStore           *ItemStore
 	activityStore       *activity.ActivityStore
 	notificationService *notifications.NotificationService
 }
