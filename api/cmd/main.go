@@ -36,12 +36,12 @@ func main() {
 		c.Next()
 	})
 
-	dbPath := os.Getenv("DB_PATH")
-	if dbPath == "" {
-		dbPath = "groceries.db"
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		log.Fatal("DATABASE_URL is required")
 	}
 
-	db, err := database.New(context.Background(), dbPath)
+	db, err := database.New(context.Background(), databaseURL)
 	if err != nil {
 		log.Fatalf("failed to open database: %v", err)
 	}

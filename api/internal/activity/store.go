@@ -35,7 +35,7 @@ func (s *ActivityStore) recordActivity(ctx context.Context, exec database.Execut
 			item_id,
 			item_name_snapshot
 		)
-		VALUES (?, ?, ?, ?, ?, ?)
+		VALUES ($1, $2, $3, $4, $5, $6)
 	`
 	_, err := exec.ExecContext(ctx, query, params.EventType, params.HouseholdID, params.ListID, params.ActorMemberID, params.ItemID, params.ItemNameSnapshot)
 	if err != nil {

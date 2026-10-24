@@ -1,14 +1,29 @@
 name: ui
 
 services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./api/migrations/001_init.up.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+      - ./api/migrations/002_seed_demo.up.sql:/docker-entrypoint-initdb.d/002_seed_demo.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
   api:
     build: ./api
     env_file:
       - ./.env
-    environment:
-      - DB_PATH=/data/groceries.db
-    volumes:
-      - sqlite-data:/data
+    depends_on:
+      postgres:
+          condition: service_healthy 
     restart: unless-stopped
   ui:
     build: ./ui
@@ -26,4 +41,4 @@ services:
       - ui
     restart: unless-stopped
 volumes:
-  sqlite-data:
+  postgres-data:

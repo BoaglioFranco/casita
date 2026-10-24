@@ -1,3 +1,3 @@
 The goal of this project is to create a quick app that lets my wife and I share a groceries list and get push notifications each time one adds or removes an item from the list. The push notifications are very important.
 We have 2 iphones, i don't intend to share this app with anyone and i don't have a developer account. So i came to the conclusion that the best way to implement this is with a PWA. 
-The idea is that the BE will be a small go server with SQLite and the UI something with react. But i want to test the PWA push notification flow with a hello world first because otherwise the entire thing falls apart.
+The backend is a small Go server backed by PostgreSQL, and the UI is built with React. The PWA push notification flow is the core feature.

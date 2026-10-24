@@ -20,7 +20,7 @@ func NewStore(db *database.Database) *HouseholdStore {
 }
 
 func (s *HouseholdStore) InsertHousehold(ctx context.Context, name string) error {
-	query := `INSERT INTO households (name) VALUES (?)`
+	query := `INSERT INTO households (name) VALUES ($1)`
 
 	_, err := s.db.ExecContext(ctx, query, name)
 
@@ -31,7 +31,7 @@ func (s *HouseholdStore) InsertHousehold(ctx context.Context, name string) error
 }
 
 func (s *HouseholdStore) InsertMember(ctx context.Context, params InsertMemberParams) error {
-	query := `INSERT INTO members (household_id, name) VALUES (?, ?)`
+	query := `INSERT INTO members (household_id, name) VALUES ($1, $2)`
 
 	_, err := s.db.ExecContext(ctx, query, params.HouseholdID, params.Name)
 	if err != nil {
@@ -45,7 +45,7 @@ func (s *HouseholdStore) GetMember(ctx context.Context, memberID int64) (*Member
 	query := `
 		SELECT id, household_id, name
 		FROM members
-		WHERE id = ?
+		WHERE id = $1
 	`
 
 	members := make([]Member, 0, 1)
@@ -60,7 +60,7 @@ func (s *HouseholdStore) GetMember(ctx context.Context, memberID int64) (*Member
 }
 
 func (s *HouseholdStore) MemberByUserID(ctx context.Context, userID int64, househouldID int64) (*Member, error) {
-	query := `SELECT id, household_id, name FROM members WHERE user_id = ? AND household_id = ?`
+	query := `SELECT id, household_id, name FROM members WHERE user_id = $1 AND household_id = $2`
 	var member Member
 	if err := s.db.GetContext(ctx, &member, query, userID, househouldID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

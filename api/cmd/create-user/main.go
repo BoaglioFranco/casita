@@ -14,15 +14,15 @@ import (
 )
 
 func main() {
-	dbPath := os.Getenv("DB_PATH")
-	if dbPath == "" {
-		dbPath = "groceries.db"
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		databaseURL = "postgres://groceries:groceries@localhost:5432/groceries?sslmode=disable"
 	}
 
 	email := flag.String("email", "", "user email")
 	name := flag.String("name", "", "household member name")
 	householdID := flag.Int64("household-id", 1, "household ID")
-	flag.StringVar(&dbPath, "db", dbPath, "SQLite database path")
+	flag.StringVar(&databaseURL, "database-url", databaseURL, "PostgreSQL connection URL")
 	flag.Parse()
 
 	*email = strings.TrimSpace(*email)
@@ -50,7 +50,7 @@ func main() {
 	}
 
 	ctx := context.Background()
-	db, err := database.New(ctx, dbPath)
+	db, err := database.New(ctx, databaseURL)
 	if err != nil {
 		log.Fatalf("open database: %v", err)
 	}
@@ -58,9 +58,10 @@ func main() {
 
 	var userID int64
 	err = db.WithTx(ctx, func(tx database.Executor) error {
-		result, err := tx.ExecContext(
+		err := tx.GetContext(
 			ctx,
-			`INSERT INTO users (email, password_hash) VALUES (?, ?)`,
+			&userID,
+			`INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id`,
 			*email,
 			string(passwordHash),
 		)
@@ -68,14 +69,9 @@ func main() {
 			return fmt.Errorf("insert user: %w", err)
 		}
 
-		userID, err = result.LastInsertId()
-		if err != nil {
-			return fmt.Errorf("get user ID: %w", err)
-		}
-
 		_, err = tx.ExecContext(
 			ctx,
-			`INSERT INTO members (household_id, user_id, name) VALUES (?, ?, ?)`,
+			`INSERT INTO members (household_id, user_id, name) VALUES ($1, $2, $3)`,
 			*householdID,
 			userID,
 			*name,

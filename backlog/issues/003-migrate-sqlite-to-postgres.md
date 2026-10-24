@@ -1,6 +1,6 @@
 ---
 id: ISSUE-003
-status: open
+status: in-progress
 priority: medium
 type: maintenance
 created: 2026-10-21
@@ -44,9 +44,8 @@ not be sufficient.
 
 ## Expected outcome
 
-The API uses PostgreSQL in local and Raspberry Pi deployments, and existing
-SQLite application data can be transferred once without losing identifiers,
-relationships, users, sessions, lists, items, or push subscriptions.
+The API uses PostgreSQL in local and Raspberry Pi deployments. This is a clean
+pre-production cutover; existing SQLite data does not need to be transferred.
 
 ## Acceptance criteria
 
@@ -55,13 +54,9 @@ relationships, users, sessions, lists, items, or push subscriptions.
 - [ ] The API connects to PostgreSQL and waits or retries appropriately during startup
 - [ ] Migrations create a PostgreSQL-compatible schema from an empty database
 - [ ] Queries and transaction behavior work with the selected PostgreSQL driver
-- [ ] A documented one-time process transfers and validates the existing SQLite data
-- [ ] Record counts and foreign-key relationships are verified after transfer
-- [ ] The SQLite data is retained as a rollback source until PostgreSQL is verified
 - [ ] Relevant API tests pass against PostgreSQL
 
 ## Notes
 
-The driver, migration tool, and transfer mechanism still need investigation.
-Until this issue is implemented, SQLite should live at a stable mounted path
-such as `/data/groceries.db` rather than in the API container's writable layer.
+The user confirmed on 2026-10-23 that the application is pre-production and no
+SQLite data preservation or transfer path is required.

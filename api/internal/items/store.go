@@ -26,16 +26,12 @@ func (s *ItemStore) InsertItemTx(ctx context.Context, tx database.Executor, para
 }
 
 func (s *ItemStore) insertItem(ctx context.Context, exec database.Executor, params InsertItemParams) (int64, error) {
-	query := `INSERT INTO items (list_id, name, description) VALUES (?, ?, ?)`
+	query := `INSERT INTO items (list_id, name, description) VALUES ($1, $2, $3) RETURNING id`
 
-	result, err := exec.ExecContext(ctx, query, params.ListID, params.Name, params.Description)
+	var itemID int64
+	err := exec.GetContext(ctx, &itemID, query, params.ListID, params.Name, params.Description)
 	if err != nil {
 		return 0, fmt.Errorf("unable to insert item: %w", err)
-	}
-
-	itemID, err := result.LastInsertId()
-	if err != nil {
-		return 0, fmt.Errorf("unable to get inserted item id: %w", err)
 	}
 
 	return itemID, nil
@@ -50,7 +46,7 @@ func (s *ItemStore) DeleteItemTx(ctx context.Context, tx database.Executor, item
 }
 
 func (s *ItemStore) deleteItem(ctx context.Context, exec database.Executor, itemID int64) error {
-	query := `DELETE FROM items WHERE id = ?`
+	query := `DELETE FROM items WHERE id = $1`
 
 	result, err := exec.ExecContext(ctx, query, itemID)
 	if err != nil {
@@ -72,7 +68,7 @@ func (s *ItemStore) GetItemTx(ctx context.Context, tx database.Executor, itemID 
 	query := `
 		SELECT id, list_id, name, description, created_at, updated_at
 		FROM items
-		WHERE id = ?
+		WHERE id = $1
 	`
 
 	items := make([]Item, 0, 1)
@@ -90,7 +86,7 @@ func (s *ItemStore) GetItemsFromList(ctx context.Context, listID int64) ([]Item,
 	query := `
 		SELECT id, list_id, name, description, created_at, updated_at
 		FROM items
-		WHERE list_id = ?
+		WHERE list_id = $1
 		ORDER BY created_at DESC
 	`
 

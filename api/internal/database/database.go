@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/jmoiron/sqlx"
-	_ "modernc.org/sqlite"
+	_ "github.com/lib/pq"
 )
 
 type Database struct {
@@ -19,25 +20,42 @@ type Executor interface {
 	SelectContext(ctx context.Context, dest any, query string, args ...any) error
 }
 
-func New(ctx context.Context, dbPath string) (*Database, error) {
-	db, err := sqlx.Open("sqlite", dbPath)
+func New(ctx context.Context, databaseURL string) (*Database, error) {
+	db, err := sqlx.Open("postgres", databaseURL)
 	if err != nil {
-		return nil, fmt.Errorf("open sqlite: %w", err)
+		return nil, fmt.Errorf("open postgres: %w", err)
 	}
 
-	db.SetMaxOpenConns(1)
+	db.SetMaxOpenConns(10)
+	db.SetMaxIdleConns(5)
+	db.SetConnMaxLifetime(30 * time.Minute)
 
-	if _, err := db.ExecContext(ctx, "PRAGMA foreign_keys = ON"); err != nil {
+	if err := pingWithRetry(ctx, db, 30*time.Second, time.Second); err != nil {
 		db.Close()
-		return nil, fmt.Errorf("enable foreign keys: %w", err)
-	}
-
-	if err := db.PingContext(ctx); err != nil {
-		db.Close()
-		return nil, fmt.Errorf("ping sqlite: %w", err)
+		return nil, fmt.Errorf("ping postgres: %w", err)
 	}
 
 	return &Database{db: db}, nil
+}
+
+func pingWithRetry(ctx context.Context, db *sqlx.DB, timeout, interval time.Duration) error {
+	retryCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	var lastErr error
+	for {
+		if err := db.PingContext(retryCtx); err == nil {
+			return nil
+		} else {
+			lastErr = err
+		}
+
+		select {
+		case <-retryCtx.Done():
+			return fmt.Errorf("database did not become ready: %w", lastErr)
+		case <-time.After(interval):
+		}
+	}
 }
 
 func (d *Database) Close() error {

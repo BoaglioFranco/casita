@@ -7,5 +7,9 @@
   "[sql]": {
     "editor.defaultFormatter": "xsw.vscode-sqlfluff-lsp",
     "editor.formatOnSave": true
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.formatOnSave": true
   }
 }
