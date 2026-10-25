@@ -1,11 +1,11 @@
 {
-  "name": "Groceries Push Demo",
-  "short_name": "Groceries",
+  "name": "Casita",
+  "short_name": "Casita",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f6f2ea",
-  "theme_color": "#1f7a4d",
+  "background_color": "#f3edff",
+  "theme_color": "#5f30d8",
   "icons": [
     {
       "src": "/icon.svg",

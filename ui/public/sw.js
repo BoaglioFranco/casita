@@ -1,7 +1,7 @@
 self.addEventListener("push", (event) => {
   let payload = {
-    title: "Groceries",
-    body: "Test notification",
+    title: "Casita",
+    body: "Your household has an update.",
   };
 
   if (event.data) {
@@ -20,7 +20,7 @@ self.addEventListener("push", (event) => {
       body: payload.body,
       badge: "/icon.svg",
       icon: "/icon.svg",
-      tag: "groceries-test",
+      tag: "casita-update",
     }),
   );
 });

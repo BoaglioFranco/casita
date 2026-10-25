@@ -1,4 +1,4 @@
-.PHONY: dev db-up db-down db-reset db-shell create-user test-integration
+.PHONY: dev dev-db db-up db-down db-reset db-shell create-user test-integration
 
 SHELL := /bin/bash
 DATABASE_URL ?= postgres://groceries:groceries@localhost:5432/groceries?sslmode=disable
@@ -7,6 +7,10 @@ HOUSEHOLD_ID ?= 1
 # Run the API with hot reloading
 dev:
 	air
+
+# Start the local PostgreSQL service and wait until it is healthy
+dev-db:
+	docker compose -f ../compose.yml --project-directory .. up -d --wait postgres
 
 # Apply database migrations
 db-up:
@@ -27,7 +31,10 @@ db-shell:
 
 # Create a user and membership, prompting for the password
 create-user:
-	go run ./cmd/create-user -database-url "$(DATABASE_URL)" -email "$(EMAIL)" -name "$(NAME)" -household-id "$(HOUSEHOLD_ID)"
+	@set -a; \
+	. ./.env; \
+	set +a; \
+	go run ./cmd/create-user -email "$(EMAIL)" -name "$(NAME)" -household-id "$(HOUSEHOLD_ID)"
 
 test-integration:
 	TEST_DATABASE_URL="$(DATABASE_URL)" go test ./...
