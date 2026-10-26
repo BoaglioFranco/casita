@@ -20,7 +20,7 @@ function wasPromptDismissed(): boolean {
 }
 
 export function NotificationPrompt({ householdId }: { householdId: string }) {
-  const state = useQuery(notificationStateQuery);
+  const state = useQuery(notificationStateQuery(householdId));
   const enable = useEnableNotifications(householdId);
   const [dismissed, setDismissed] = useState(wasPromptDismissed);
   const isNonInstalledMobileBrowser = isMobileDevice() && !isStandaloneApp();

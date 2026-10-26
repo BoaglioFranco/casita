@@ -2,6 +2,8 @@ import { apiRequest } from '../../lib/api-client';
 
 type VapidKeyResponse = { publicKey?: string };
 
+const existingSubscriptionSyncs = new Map<string, Promise<void>>();
+
 export type NotificationState =
   | 'disabled'
   | 'enabled'
@@ -32,7 +34,7 @@ function isIosDevice(): boolean {
   );
 }
 
-export async function getNotificationState(): Promise<NotificationState> {
+export async function getNotificationState(householdId: string): Promise<NotificationState> {
   if (isIosDevice() && !isStandaloneApp()) return 'install-required';
 
   if (
@@ -47,7 +49,11 @@ export async function getNotificationState(): Promise<NotificationState> {
   if (Notification.permission !== 'granted') return 'disabled';
 
   const registration = await navigator.serviceWorker.getRegistration();
-  return (await registration?.pushManager.getSubscription()) == null ? 'disabled' : 'enabled';
+  const subscription = await registration?.pushManager.getSubscription();
+  if (subscription == null) return 'disabled';
+
+  await syncExistingSubscriptionOnce(householdId, subscription);
+  return 'enabled';
 }
 
 export async function enableNotifications(householdId: string): Promise<void> {
@@ -75,7 +81,23 @@ export async function enableNotifications(householdId: string): Promise<void> {
       applicationServerKey: urlBase64ToUint8Array(publicKey),
     }));
 
-  await apiRequest(`/households/${householdId}/notifications/subscribe`, {
+  await syncExistingSubscriptionOnce(householdId, subscription);
+}
+
+function syncExistingSubscriptionOnce(
+  householdId: string,
+  subscription: PushSubscription,
+): Promise<void> {
+  const existingSync = existingSubscriptionSyncs.get(householdId);
+  if (existingSync) return existingSync;
+
+  const sync = storeSubscription(householdId, subscription);
+  existingSubscriptionSyncs.set(householdId, sync);
+  return sync;
+}
+
+function storeSubscription(householdId: string, subscription: PushSubscription): Promise<void> {
+  return apiRequest(`/households/${householdId}/notifications/subscribe`, {
     method: 'POST',
     body: JSON.stringify(subscription),
   });

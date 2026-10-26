@@ -3,10 +3,12 @@ import { getNotificationState } from './api';
 
 export const notificationKeys = {
   all: ['notifications'] as const,
-  state: () => [...notificationKeys.all, 'state'] as const,
+  state: (householdId: string) => [...notificationKeys.all, 'state', householdId] as const,
 };
 
-export const notificationStateQuery = queryOptions({
-  queryKey: notificationKeys.state(),
-  queryFn: getNotificationState,
-});
+export function notificationStateQuery(householdId: string) {
+  return queryOptions({
+    queryKey: notificationKeys.state(householdId),
+    queryFn: () => getNotificationState(householdId),
+  });
+}

@@ -7,7 +7,7 @@ import { useEnableNotifications } from './hooks';
 import { notificationStateQuery } from './queries';
 
 export function NotificationSettings({ householdId }: { householdId: string }) {
-  const state = useQuery(notificationStateQuery);
+  const state = useQuery(notificationStateQuery(householdId));
   const enable = useEnableNotifications(householdId);
   const isEnabled = state.data === 'enabled';
   const canEnable = state.data === 'disabled';
