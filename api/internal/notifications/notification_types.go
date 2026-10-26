@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/SherClockHolmes/webpush-go"
+	"github.com/google/uuid"
 )
 
 type PushServiceError struct {
@@ -21,8 +22,8 @@ func (e *PushServiceError) Error() string {
 }
 
 type StoreSubscriptionParams struct {
-	HouseholdId int64
-	MemberId    int64
+	HouseholdId uuid.UUID
+	MemberId    uuid.UUID
 	Endpoint    string
 	P256dh      string
 	Auth        string
@@ -44,9 +45,9 @@ type PushSubscriptionPayloadKeys struct {
 }
 
 type PushSubscription struct {
-	ID          int64     `db:"id"`
-	HouseholdID int64     `db:"household_id"`
-	MemberID    int64     `db:"member_id"`
+	ID          uuid.UUID `db:"id"`
+	HouseholdID uuid.UUID `db:"household_id"`
+	MemberID    uuid.UUID `db:"member_id"`
 	Endpoint    string    `db:"endpoint"`
 	P256dh      string    `db:"p256dh"`
 	Auth        string    `db:"auth"`

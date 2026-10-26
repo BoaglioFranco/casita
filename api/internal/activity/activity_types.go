@@ -1,5 +1,7 @@
 package activity
 
+import "github.com/google/uuid"
+
 type ActivityEventType string
 
 const (
@@ -9,9 +11,9 @@ const (
 
 type RecordActivityParams struct {
 	EventType        ActivityEventType
-	HouseholdID      int64
-	ListID           *int64
-	ItemID           *int64
-	ActorMemberID    *int64
+	HouseholdID      uuid.UUID
+	ListID           *uuid.UUID
+	ItemID           *uuid.UUID
+	ActorMemberID    *uuid.UUID
 	ItemNameSnapshot *string
 }

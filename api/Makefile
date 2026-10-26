@@ -2,7 +2,7 @@
 
 SHELL := /bin/bash
 DATABASE_URL ?= postgres://groceries:groceries@localhost:5432/groceries?sslmode=disable
-HOUSEHOLD_ID ?= 1
+HOUSEHOLD_ID ?=
 
 # Run the API with hot reloading
 dev:
@@ -34,7 +34,7 @@ create-user:
 	@set -a; \
 	. ./.env; \
 	set +a; \
-	go run ./cmd/create-user -email "$(EMAIL)" -name "$(NAME)" -household-id "$(HOUSEHOLD_ID)"
+	go run ./cmd/create-user -email "$(EMAIL)" -name "$(NAME)" $(if $(strip $(HOUSEHOLD_ID)),-household-id "$(HOUSEHOLD_ID)")
 
 test-integration:
 	TEST_DATABASE_URL="$(DATABASE_URL)" go test ./...

@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/BoaglioFranco/groceriesList/api/internal/database"
+	"github.com/google/uuid"
 )
 
 type AuthStore struct {
@@ -41,15 +42,15 @@ func (store *AuthStore) GetSession(ctx context.Context, tokenHash string) (*Sess
 	return &session, nil
 }
 
-func (store *AuthStore) UserIDFromEmail(ctx context.Context, email string) (int64, error) {
+func (store *AuthStore) UserIDFromEmail(ctx context.Context, email string) (uuid.UUID, error) {
 	query := `SELECT id FROM users WHERE email = $1`
-	var userID int64
+	var userID uuid.UUID
 	if err := store.db.GetContext(ctx, &userID, query, email); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return 0, ErrUserNotFound
+			return uuid.Nil, ErrUserNotFound
 		}
 
-		return 0, fmt.Errorf("get user ID by email: %w", err)
+		return uuid.Nil, fmt.Errorf("get user ID by email: %w", err)
 	}
 
 	return userID, nil

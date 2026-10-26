@@ -5,8 +5,8 @@ import { useDeleteGroceryItem } from './hooks';
 import type { GroceryItem } from './types';
 
 type GroceryItemListProps = {
-  householdId: number;
-  listId: number;
+  householdId: string;
+  listId: string;
   items: GroceryItem[];
 };
 

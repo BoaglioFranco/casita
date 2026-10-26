@@ -1,5 +1,7 @@
 package lists
 
+import "github.com/google/uuid"
+
 type ListService struct {
 	listStore *ListStore
 }
@@ -12,6 +14,6 @@ type CreateListPayload struct {
 
 // Store
 type InsertListParams struct {
-	HouseholdID int64
+	HouseholdID uuid.UUID
 	Name        string
 }

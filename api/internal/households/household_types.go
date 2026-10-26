@@ -1,6 +1,10 @@
 package households
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/google/uuid"
+)
 
 var ErrMemberNotFound = errors.New("member not found")
 
@@ -9,12 +13,12 @@ type HouseholdService struct {
 }
 
 type InsertMemberParams struct {
-	HouseholdID int64
+	HouseholdID uuid.UUID
 	Name        string
 }
 
 type Member struct {
-	ID          int64  `db:"id"`
-	HouseholdID int64  `db:"household_id"`
-	Name        string `db:"name"`
+	ID          uuid.UUID `db:"id"`
+	HouseholdID uuid.UUID `db:"household_id"`
+	Name        string    `db:"name"`
 }

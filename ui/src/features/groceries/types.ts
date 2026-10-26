@@ -1,8 +1,14 @@
+export type ItemCreator = {
+  id: string;
+  name: string;
+};
+
 export type GroceryItem = {
-  id: number;
-  listId?: number;
+  id: string;
+  listId?: string;
   name: string;
   description: string | null;
+  createdBy: ItemCreator | null;
   createdAt?: string;
   updatedAt?: string;
 };

@@ -3,6 +3,8 @@ package auth
 import (
 	"errors"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 var ErrUserNotFound = errors.New("user not found")
@@ -16,7 +18,7 @@ type AuthService struct {
 
 type CreateSessionParams struct {
 	TokenHash string
-	UserID    int64
+	UserID    uuid.UUID
 	ExpiresAt time.Time
 }
 
@@ -30,14 +32,14 @@ type InsertUserParams struct {
 	HashedPassword string
 }
 type User struct {
-	ID           int64     `db:"id"`
+	ID           uuid.UUID `db:"id"`
 	Email        string    `db:"email"`
 	PasswordHash string    `db:"password_hash"`
 	CreatedAt    time.Time `db:"created_at"`
 }
 type Session struct {
 	TokenHash string    `db:"token_hash"`
-	UserID    int64     `db:"user_id"`
+	UserID    uuid.UUID `db:"user_id"`
 	ExpiresAt time.Time `db:"expires_at"`
 	CreatedAt time.Time `db:"created_at"`
 }

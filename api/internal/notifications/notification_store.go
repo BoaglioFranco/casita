@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/BoaglioFranco/groceriesList/api/internal/database"
+	"github.com/google/uuid"
 )
 
 type NotificationStore struct {
@@ -37,7 +38,7 @@ func (store *NotificationStore) DeleteSubscription(ctx context.Context, endpoint
 	return err
 }
 
-func (store *NotificationStore) GetSubscriptionsByHousehold(ctx context.Context, householdID int64) ([]PushSubscription, error) {
+func (store *NotificationStore) GetSubscriptionsByHousehold(ctx context.Context, householdID uuid.UUID) ([]PushSubscription, error) {
 	query := `
 		SELECT household_id, member_id, endpoint, p256dh, auth
 		FROM push_subscriptions
@@ -52,7 +53,7 @@ func (store *NotificationStore) GetSubscriptionsByHousehold(ctx context.Context,
 	return householdSubscriptions, nil
 }
 
-func (store *NotificationStore) GetSubscriptionsForOtherMembers(ctx context.Context, householdID int64, actorMemberID int64) ([]PushSubscription, error) {
+func (store *NotificationStore) GetSubscriptionsForOtherMembers(ctx context.Context, householdID uuid.UUID, actorMemberID uuid.UUID) ([]PushSubscription, error) {
 	query := `
 		SELECT household_id, member_id, endpoint, p256dh, auth
 		FROM push_subscriptions

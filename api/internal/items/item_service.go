@@ -22,9 +22,10 @@ func NewItemService(db *database.Database, notificationService *notifications.No
 func (service *ItemService) CreateItem(ctx context.Context, params CreateItemParams) error {
 	err := service.db.WithTx(ctx, func(tx database.Executor) error {
 		itemID, err := service.itemStore.InsertItemTx(ctx, tx, InsertItemParams{
-			ListID:      params.ListID,
-			Name:        params.Name,
-			Description: params.Description,
+			ListID:            params.ListID,
+			Name:              params.Name,
+			Description:       params.Description,
+			CreatedByMemberID: params.ActorMemberID,
 		})
 		if err != nil {
 			return err

@@ -10,8 +10,11 @@ import (
 	"strings"
 
 	"github.com/BoaglioFranco/groceriesList/api/internal/database"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
+
+const demoHouseholdID = "019535d9-3df7-79fb-b466-fa907fa17f9e"
 
 func main() {
 	databaseURL := os.Getenv("DATABASE_URL")
@@ -21,17 +24,22 @@ func main() {
 
 	email := flag.String("email", "", "user email")
 	name := flag.String("name", "", "household member name")
-	householdID := flag.Int64("household-id", 1, "household ID")
+	householdID := flag.String("household-id", demoHouseholdID, "household UUID")
 	flag.StringVar(&databaseURL, "database-url", databaseURL, "PostgreSQL connection URL")
 	flag.Parse()
 
 	*email = strings.TrimSpace(*email)
 	*name = strings.TrimSpace(*name)
+	*householdID = strings.TrimSpace(*householdID)
 	if *email == "" || *name == "" {
 		log.Fatal("email and name are required")
 	}
-	if *householdID <= 0 {
-		log.Fatal("household-id must be greater than zero")
+	if *householdID == "" {
+		log.Fatal("household-id is required")
+	}
+	householdUUID, err := uuid.Parse(*householdID)
+	if err != nil {
+		log.Fatalf("invalid household-id: %v", err)
 	}
 
 	reader := bufio.NewReader(os.Stdin)
@@ -56,7 +64,7 @@ func main() {
 	}
 	defer db.Close()
 
-	var userID int64
+	var userID uuid.UUID
 	err = db.WithTx(ctx, func(tx database.Executor) error {
 		err := tx.GetContext(
 			ctx,
@@ -72,7 +80,7 @@ func main() {
 		_, err = tx.ExecContext(
 			ctx,
 			`INSERT INTO members (household_id, user_id, name) VALUES ($1, $2, $3)`,
-			*householdID,
+			householdUUID,
 			userID,
 			*name,
 		)
@@ -86,7 +94,7 @@ func main() {
 		log.Fatalf("create user: %v", err)
 	}
 
-	fmt.Printf("Created user %d for household %d.\n", userID, *householdID)
+	fmt.Printf("Created user %s for household %s.\n", userID, householdUUID)
 }
 
 func readLine(reader *bufio.Reader, prompt string) string {

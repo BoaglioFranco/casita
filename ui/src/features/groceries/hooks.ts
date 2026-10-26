@@ -3,7 +3,7 @@ import { createGroceryItem, deleteGroceryItem } from './api';
 import { groceryKeys } from './queries';
 import type { CreateGroceryItemInput } from './types';
 
-export function useCreateGroceryItem(householdId: number, listId: number) {
+export function useCreateGroceryItem(householdId: string, listId: string) {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (input: CreateGroceryItemInput) => createGroceryItem(householdId, listId, input),
@@ -11,10 +11,10 @@ export function useCreateGroceryItem(householdId: number, listId: number) {
   });
 }
 
-export function useDeleteGroceryItem(householdId: number, listId: number) {
+export function useDeleteGroceryItem(householdId: string, listId: string) {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: (itemId: number) => deleteGroceryItem(householdId, listId, itemId),
+    mutationFn: (itemId: string) => deleteGroceryItem(householdId, listId, itemId),
     onSuccess: () => client.invalidateQueries({ queryKey: groceryKeys.list(householdId, listId) }),
   });
 }

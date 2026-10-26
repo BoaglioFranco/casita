@@ -19,7 +19,7 @@ function wasPromptDismissed(): boolean {
   }
 }
 
-export function NotificationPrompt({ householdId }: { householdId: number }) {
+export function NotificationPrompt({ householdId }: { householdId: string }) {
   const state = useQuery(notificationStateQuery);
   const enable = useEnableNotifications(householdId);
   const [dismissed, setDismissed] = useState(wasPromptDismissed);

@@ -4,7 +4,7 @@ import { Plus, ShoppingBasket } from 'lucide-react';
 import { getErrorMessage } from '../../lib/api-client';
 import { useCreateGroceryItem } from './hooks';
 
-type GroceryItemFormProps = { householdId: number; listId: number };
+type GroceryItemFormProps = { householdId: string; listId: string };
 
 export function GroceryItemForm({ householdId, listId }: GroceryItemFormProps) {
   const [name, setName] = useState('');

@@ -2,17 +2,17 @@ package lists
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/BoaglioFranco/groceriesList/api/internal/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func (service *ListService) createListHandler(c *gin.Context) {
 	params := &CreateListPayload{}
 	householdID := utils.HouseholdIDFromContext(c)
 
-	householdIDParam, err := strconv.ParseInt(c.Param("householdId"), 10, 64)
+	householdIDParam, err := uuid.Parse(c.Param("householdId"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid household id"})
 		return

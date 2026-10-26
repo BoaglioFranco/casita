@@ -12,6 +12,7 @@ import (
 
 	"github.com/BoaglioFranco/groceriesList/api/internal/database"
 	"github.com/SherClockHolmes/webpush-go"
+	"github.com/google/uuid"
 )
 
 type NotificationService struct {
@@ -28,7 +29,7 @@ func NewNotificationService(db *database.Database, vapidPublicKey string, vapidP
 	}
 }
 
-func (service *NotificationService) NotifyOtherMembers(ctx context.Context, householdID int64, actorMemberID int64, notification Notification) error {
+func (service *NotificationService) NotifyOtherMembers(ctx context.Context, householdID uuid.UUID, actorMemberID uuid.UUID, notification Notification) error {
 	subscriptions, err := service.notificationStore.GetSubscriptionsForOtherMembers(ctx, householdID, actorMemberID)
 	if err != nil {
 		return err

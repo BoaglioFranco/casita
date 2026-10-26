@@ -1,0 +1,143 @@
+import type { LucideIcon } from 'lucide-react';
+import {
+  Baby,
+  BedDouble,
+  BookOpen,
+  BriefcaseBusiness,
+  CakeSlice,
+  Camera,
+  CalendarDays,
+  Car,
+  ClipboardList,
+  Coffee,
+  CookingPot,
+  Dumbbell,
+  Film,
+  Gift,
+  Gamepad2,
+  GraduationCap,
+  Hammer,
+  Heart,
+  HeartPulse,
+  House,
+  Lightbulb,
+  ListChecks,
+  Luggage,
+  MapPin,
+  Music,
+  Package,
+  Paintbrush,
+  PartyPopper,
+  PawPrint,
+  Plane,
+  Receipt,
+  Shirt,
+  ShoppingBasket,
+  Sprout,
+  Star,
+  Tent,
+  Trash2,
+  Users,
+  Utensils,
+  WalletCards,
+  WashingMachine,
+  Wrench,
+} from 'lucide-react';
+
+type IconDefinition = {
+  icon: LucideIcon;
+  id: string;
+  keywords: readonly string[];
+  label: string;
+};
+
+export const listIconCatalog = [
+  {
+    id: 'shopping-basket',
+    label: 'Shopping',
+    keywords: ['groceries', 'market', 'errands', 'buy'],
+    icon: ShoppingBasket,
+  },
+  { id: 'wrench', label: 'Repairs', keywords: ['fix', 'maintenance', 'tools'], icon: Wrench },
+  { id: 'house', label: 'Home', keywords: ['house', 'family'], icon: House },
+  {
+    id: 'list-checks',
+    label: 'Checklist',
+    keywords: ['tasks', 'todo', 'to-do'],
+    icon: ListChecks,
+  },
+  {
+    id: 'clipboard-list',
+    label: 'General list',
+    keywords: ['notes', 'items'],
+    icon: ClipboardList,
+  },
+  {
+    id: 'calendar-days',
+    label: 'Calendar',
+    keywords: ['dates', 'schedule', 'plans'],
+    icon: CalendarDays,
+  },
+  { id: 'users', label: 'People', keywords: ['family', 'friends', 'group'], icon: Users },
+  { id: 'map-pin', label: 'Places', keywords: ['locations', 'visit', 'map'], icon: MapPin },
+  { id: 'plane', label: 'Travel', keywords: ['flight', 'holiday', 'vacation'], icon: Plane },
+  { id: 'luggage', label: 'Packing', keywords: ['travel', 'trip', 'suitcase'], icon: Luggage },
+  { id: 'car', label: 'Car', keywords: ['vehicle', 'drive', 'transport'], icon: Car },
+  { id: 'gift', label: 'Gifts', keywords: ['presents', 'wishlist', 'birthday'], icon: Gift },
+  {
+    id: 'party-popper',
+    label: 'Celebration',
+    keywords: ['party', 'event', 'birthday'],
+    icon: PartyPopper,
+  },
+  { id: 'cake-slice', label: 'Birthday', keywords: ['cake', 'party', 'food'], icon: CakeSlice },
+  { id: 'utensils', label: 'Meals', keywords: ['food', 'restaurant', 'dinner'], icon: Utensils },
+  { id: 'cooking-pot', label: 'Cooking', keywords: ['recipes', 'kitchen', 'food'], icon: CookingPot },
+  { id: 'paw-print', label: 'Pets', keywords: ['animals', 'dog', 'cat'], icon: PawPrint },
+  { id: 'baby', label: 'Kids', keywords: ['children', 'child', 'family'], icon: Baby },
+  {
+    id: 'graduation-cap',
+    label: 'School',
+    keywords: ['study', 'education', 'class'],
+    icon: GraduationCap,
+  },
+  { id: 'heart-pulse', label: 'Health', keywords: ['medical', 'medicine', 'doctor'], icon: HeartPulse },
+  { id: 'dumbbell', label: 'Exercise', keywords: ['fitness', 'gym', 'workout'], icon: Dumbbell },
+  { id: 'wallet-cards', label: 'Budget', keywords: ['money', 'finance', 'spending'], icon: WalletCards },
+  { id: 'receipt', label: 'Bills', keywords: ['expenses', 'payments', 'money'], icon: Receipt },
+  { id: 'package', label: 'Packages', keywords: ['delivery', 'orders', 'boxes'], icon: Package },
+  { id: 'shirt', label: 'Clothes', keywords: ['clothing', 'wardrobe', 'laundry'], icon: Shirt },
+  {
+    id: 'washing-machine',
+    label: 'Laundry',
+    keywords: ['clothes', 'washing', 'chores'],
+    icon: WashingMachine,
+  },
+  { id: 'bed-double', label: 'Bedroom', keywords: ['sleep', 'room', 'home'], icon: BedDouble },
+  { id: 'book-open', label: 'Books', keywords: ['reading', 'library'], icon: BookOpen },
+  { id: 'film', label: 'Movies', keywords: ['cinema', 'watch', 'shows'], icon: Film },
+  { id: 'music', label: 'Music', keywords: ['songs', 'playlist', 'listen'], icon: Music },
+  { id: 'sprout', label: 'Garden', keywords: ['plants', 'outdoors', 'yard'], icon: Sprout },
+  { id: 'hammer', label: 'Projects', keywords: ['build', 'diy', 'tools'], icon: Hammer },
+  {
+    id: 'paintbrush',
+    label: 'Decorating',
+    keywords: ['paint', 'creative', 'home'],
+    icon: Paintbrush,
+  },
+  { id: 'trash', label: 'Decluttering', keywords: ['cleaning', 'remove', 'chores'], icon: Trash2 },
+  { id: 'briefcase', label: 'Work', keywords: ['job', 'office', 'business'], icon: BriefcaseBusiness },
+  { id: 'lightbulb', label: 'Ideas', keywords: ['inspiration', 'brainstorm'], icon: Lightbulb },
+  { id: 'heart', label: 'Favorites', keywords: ['love', 'liked'], icon: Heart },
+  { id: 'star', label: 'Highlights', keywords: ['favorite', 'important'], icon: Star },
+  { id: 'gamepad', label: 'Games', keywords: ['gaming', 'play'], icon: Gamepad2 },
+  { id: 'camera', label: 'Photos', keywords: ['pictures', 'memories'], icon: Camera },
+  { id: 'tent', label: 'Camping', keywords: ['outdoors', 'trip', 'travel'], icon: Tent },
+  { id: 'coffee', label: 'Coffee', keywords: ['cafe', 'drinks', 'break'], icon: Coffee },
+] as const satisfies readonly IconDefinition[];
+
+export type ListIconId = (typeof listIconCatalog)[number]['id'];
+
+export function getListIconDefinition(id: ListIconId) {
+  return listIconCatalog.find((option) => option.id === id) ?? listIconCatalog[0];
+}

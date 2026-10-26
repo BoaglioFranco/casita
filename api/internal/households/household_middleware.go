@@ -3,10 +3,10 @@ package households
 import (
 	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/BoaglioFranco/groceriesList/api/internal/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func (service *HouseholdService) RequireMembership(c *gin.Context) {
@@ -15,7 +15,7 @@ func (service *HouseholdService) RequireMembership(c *gin.Context) {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	householdID, err := strconv.ParseInt(householdIDString, 10, 64)
+	householdID, err := uuid.Parse(householdIDString)
 	if err != nil {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return

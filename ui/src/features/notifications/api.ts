@@ -50,7 +50,7 @@ export async function getNotificationState(): Promise<NotificationState> {
   return (await registration?.pushManager.getSubscription()) == null ? 'disabled' : 'enabled';
 }
 
-export async function enableNotifications(householdId: number): Promise<void> {
+export async function enableNotifications(householdId: string): Promise<void> {
   if (!('serviceWorker' in navigator)) {
     throw new Error('This browser does not support service workers.');
   }

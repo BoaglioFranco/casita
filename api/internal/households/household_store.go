@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/BoaglioFranco/groceriesList/api/internal/database"
+	"github.com/google/uuid"
 )
 
 type HouseholdStore struct {
@@ -41,7 +42,7 @@ func (store *HouseholdStore) InsertMember(ctx context.Context, params InsertMemb
 	return nil
 }
 
-func (store *HouseholdStore) GetMember(ctx context.Context, memberID int64) (*Member, error) {
+func (store *HouseholdStore) GetMember(ctx context.Context, memberID uuid.UUID) (*Member, error) {
 	query := `
 		SELECT id, household_id, name
 		FROM members
@@ -59,10 +60,10 @@ func (store *HouseholdStore) GetMember(ctx context.Context, memberID int64) (*Me
 	return &members[0], nil
 }
 
-func (store *HouseholdStore) MemberByUserID(ctx context.Context, userID int64, househouldID int64) (*Member, error) {
+func (store *HouseholdStore) MemberByUserID(ctx context.Context, userID uuid.UUID, householdID uuid.UUID) (*Member, error) {
 	query := `SELECT id, household_id, name FROM members WHERE user_id = $1 AND household_id = $2`
 	var member Member
-	if err := store.db.GetContext(ctx, &member, query, userID, househouldID); err != nil {
+	if err := store.db.GetContext(ctx, &member, query, userID, householdID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrMemberNotFound
 		}
