@@ -3,7 +3,7 @@ package notifications
 import (
 	"net/http"
 
-	"github.com/BoaglioFranco/groceriesList/api/internal/utils"
+	"github.com/BoaglioFranco/groceriesList/api/internal/households"
 	"github.com/SherClockHolmes/webpush-go"
 	"github.com/gin-gonic/gin"
 )
@@ -21,8 +21,8 @@ func (service *NotificationService) publicVapidKeyHandler(c *gin.Context) {
 }
 
 func (service *NotificationService) subscribeHandler(c *gin.Context) {
-	memberID := utils.MemberIDFromContext(c)
-	householdID := utils.HouseholdIDFromContext(c)
+	memberID := households.MemberIDFromContext(c)
+	householdID := households.HouseholdIDFromContext(c)
 	var subscription webpush.Subscription
 	if err := c.ShouldBindJSON(&subscription); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid subscription data"})

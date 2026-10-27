@@ -34,5 +34,6 @@ func (service *HouseholdService) RequireMembership(c *gin.Context) {
 
 	c.Set("member_id", member.ID)
 	c.Set("household_id", householdID)
+	c.Set("member", member)
 	c.Next()
 }

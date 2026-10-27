@@ -4,14 +4,14 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/BoaglioFranco/groceriesList/api/internal/utils"
+	"github.com/BoaglioFranco/groceriesList/api/internal/households"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 func (service *ItemService) createItemHandler(c *gin.Context) {
-	memberId := utils.MemberIDFromContext(c)
-	householdID := utils.HouseholdIDFromContext(c)
+	memberId := households.MemberIDFromContext(c)
+	householdID := households.HouseholdIDFromContext(c)
 	params := &CreateItemPayload{}
 
 	listID, err := uuid.Parse(c.Param("listId"))
@@ -51,8 +51,8 @@ func (service *ItemService) createItemHandler(c *gin.Context) {
 }
 
 func (service *ItemService) removeItemHandler(c *gin.Context) {
-	memberID := utils.MemberIDFromContext(c)
-	householdID := utils.HouseholdIDFromContext(c)
+	memberID := households.MemberIDFromContext(c)
+	householdID := households.HouseholdIDFromContext(c)
 
 	listID, err := uuid.Parse(c.Param("listId"))
 	if err != nil {
@@ -93,7 +93,7 @@ func (service *ItemService) removeItemHandler(c *gin.Context) {
 }
 
 func (service *ItemService) getItemsHandler(c *gin.Context) {
-	householdID := utils.HouseholdIDFromContext(c)
+	householdID := households.HouseholdIDFromContext(c)
 
 	householdIDParam, err := uuid.Parse(c.Param("householdId"))
 	if err != nil {

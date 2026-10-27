@@ -15,10 +15,12 @@ type HouseholdService struct {
 type InsertMemberParams struct {
 	HouseholdID uuid.UUID
 	Name        string
+	UserID      uuid.UUID
 }
 
 type Member struct {
-	ID          uuid.UUID `db:"id"`
-	HouseholdID uuid.UUID `db:"household_id"`
-	Name        string    `db:"name"`
+	ID          uuid.UUID `db:"id" json:"id"`
+	HouseholdID uuid.UUID `db:"household_id" json:"householdId"`
+	Name        string    `db:"name" json:"name"`
+	UserID      uuid.UUID `db:"user_id" json:"userId"`
 }

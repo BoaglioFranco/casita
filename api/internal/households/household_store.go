@@ -32,9 +32,9 @@ func (store *HouseholdStore) InsertHousehold(ctx context.Context, name string) e
 }
 
 func (store *HouseholdStore) InsertMember(ctx context.Context, params InsertMemberParams) error {
-	query := `INSERT INTO members (household_id, name) VALUES ($1, $2)`
+	query := `INSERT INTO members (household_id, name, user_id) VALUES ($1, $2, $3)`
 
-	_, err := store.db.ExecContext(ctx, query, params.HouseholdID, params.Name)
+	_, err := store.db.ExecContext(ctx, query, params.HouseholdID, params.Name, params.UserID)
 	if err != nil {
 		return fmt.Errorf("unable to insert member: %w", err)
 	}
@@ -44,7 +44,7 @@ func (store *HouseholdStore) InsertMember(ctx context.Context, params InsertMemb
 
 func (store *HouseholdStore) GetMember(ctx context.Context, memberID uuid.UUID) (*Member, error) {
 	query := `
-		SELECT id, household_id, name
+		SELECT id, household_id, name, user_id
 		FROM members
 		WHERE id = $1
 	`
@@ -61,7 +61,7 @@ func (store *HouseholdStore) GetMember(ctx context.Context, memberID uuid.UUID) 
 }
 
 func (store *HouseholdStore) MemberByUserID(ctx context.Context, userID uuid.UUID, householdID uuid.UUID) (*Member, error) {
-	query := `SELECT id, household_id, name FROM members WHERE user_id = $1 AND household_id = $2`
+	query := `SELECT id, household_id, name, user_id FROM members WHERE user_id = $1 AND household_id = $2`
 	var member Member
 	if err := store.db.GetContext(ctx, &member, query, userID, householdID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

@@ -61,6 +61,7 @@ func main() {
 
 	householdRoutes := authenticatedRoutes.Group("/households/:householdId")
 	householdRoutes.Use(householdService.RequireMembership)
+	householdService.SetupHouseholdRoutes(householdRoutes)
 	listsService.SetupListRoutes(householdRoutes)
 	itemsService.SetupItemRoutes(householdRoutes)
 	notificationsService.SetupNotificationRoutes(householdRoutes)
