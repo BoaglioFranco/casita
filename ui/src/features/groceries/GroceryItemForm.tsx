@@ -1,6 +1,6 @@
-import { FormEvent, useState } from 'react';
-import { Alert, Button, Group, Stack, TextInput } from '@mantine/core';
-import { Plus, ShoppingBasket } from 'lucide-react';
+import { FormEvent, useId, useState } from 'react';
+import { Alert, Button, Collapse, Group, Stack, Textarea, TextInput } from '@mantine/core';
+import { ChevronDown, ChevronUp, Plus, ShoppingBasket } from 'lucide-react';
 import { getErrorMessage } from '../../lib/api-client';
 import { useCreateGroceryItem } from './hooks';
 
@@ -8,6 +8,9 @@ type GroceryItemFormProps = { householdId: string; listId: string };
 
 export function GroceryItemForm({ householdId, listId }: GroceryItemFormProps) {
   const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  const descriptionPanelId = useId();
   const createItem = useCreateGroceryItem(householdId, listId);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -15,7 +18,16 @@ export function GroceryItemForm({ householdId, listId }: GroceryItemFormProps) {
     const trimmedName = name.trim();
     if (!trimmedName) return;
 
-    createItem.mutate({ name: trimmedName }, { onSuccess: () => setName('') });
+    createItem.mutate(
+      { name: trimmedName, description: description.trim() || undefined },
+      {
+        onSuccess: () => {
+          setName('');
+          setDescription('');
+          setDescriptionExpanded(false);
+        },
+      },
+    );
   }
 
   return (
@@ -36,6 +48,33 @@ export function GroceryItemForm({ householdId, listId }: GroceryItemFormProps) {
             Add
           </Button>
         </Group>
+        <Button
+          type="button"
+          variant="subtle"
+          size="compact-sm"
+          mt="xs"
+          px="xs"
+          ml="calc(-1 * var(--mantine-spacing-xs))"
+          aria-expanded={descriptionExpanded}
+          aria-controls={descriptionPanelId}
+          rightSection={descriptionExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          disabled={createItem.isPending}
+          onClick={() => setDescriptionExpanded((expanded) => !expanded)}
+        >
+          {descriptionExpanded ? 'Hide description' : 'Show description'}
+        </Button>
+        <Collapse expanded={descriptionExpanded} id={descriptionPanelId}>
+          <Textarea
+            mt="sm"
+            aria-label="Description"
+            placeholder="Description"
+            autosize
+            minRows={2}
+            value={description}
+            onChange={(event) => setDescription(event.currentTarget.value)}
+            disabled={createItem.isPending}
+          />
+        </Collapse>
       </form>
 
       {createItem.isError && (

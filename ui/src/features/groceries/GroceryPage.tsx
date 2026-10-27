@@ -27,12 +27,10 @@ export function GroceryPage() {
       <NotificationPrompt householdId={householdId} />
       <Container size="md" px="md" py="md">
         <Stack gap="md">
-          <Group justify="space-between" align="flex-start" gap="md" wrap="nowrap">
-            <div>
-              <Title order={1} fz={{ base: 32, sm: 48 }} lh={1} lts={0}>
-                Groceries
-              </Title>
-            </div>
+          <Group justify="space-between" align="center" gap="md" wrap="nowrap">
+            <Title order={1} fz={{ base: 32, sm: 48 }} lh={1} lts={0}>
+              Groceries
+            </Title>
 
             <Tooltip label="Refresh list">
               <ActionIcon

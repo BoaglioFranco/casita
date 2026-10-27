@@ -9,14 +9,20 @@ import {
   UnstyledButton,
   useMantineTheme,
 } from '@mantine/core';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { ChevronDown, House, Settings, UsersRound } from 'lucide-react';
 import { appConfig } from '../../app/config';
+import { currentMemberQuery } from '../../features/households/queries';
 
 export function AppHeader({ showAccountMenu = true }: { showAccountMenu?: boolean }) {
   const theme = useMantineTheme();
   const primaryColor = theme.colors[theme.primaryColor][6];
-  const memberName = appConfig.currentMember.name;
+  const memberQuery = useQuery({
+    ...currentMemberQuery(appConfig.householdId),
+    enabled: showAccountMenu,
+  });
+  const memberName = memberQuery.data?.name ?? 'Account';
   const memberInitial = memberName.charAt(0).toUpperCase();
 
   return (

@@ -1,8 +1,10 @@
-import { ActionIcon, Alert, Box, Group, Paper, Stack, Text, ThemeIcon, Tooltip } from '@mantine/core';
-import { ShoppingBasket, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Alert, Paper, Stack, Text, ThemeIcon } from '@mantine/core';
+import { ShoppingBasket } from 'lucide-react';
 import { getErrorMessage } from '../../lib/api-client';
 import { useDeleteGroceryItem } from './hooks';
 import type { GroceryItem } from './types';
+import { GroceryItemRow } from './GroceryItemRow';
 
 type GroceryItemListProps = {
   householdId: string;
@@ -12,6 +14,13 @@ type GroceryItemListProps = {
 
 export function GroceryItemList({ householdId, listId, items }: GroceryItemListProps) {
   const deleteItem = useDeleteGroceryItem(householdId, listId);
+  const [openedItemId, setOpenedItemId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (openedItemId && !items.some((item) => item.id === openedItemId)) {
+      setOpenedItemId(null);
+    }
+  }, [items, openedItemId]);
 
   if (items.length === 0) {
     return (
@@ -21,9 +30,6 @@ export function GroceryItemList({ householdId, listId, items }: GroceryItemListP
             <ShoppingBasket size={28} />
           </ThemeIcon>
           <Text fw={650}>No items yet</Text>
-          <Text c="dimmed" size="sm">
-            Add the first grocery item above.
-          </Text>
         </Stack>
       </Paper>
     );
@@ -38,33 +44,17 @@ export function GroceryItemList({ householdId, listId, items }: GroceryItemListP
       )}
 
       {items.map((item) => (
-        <Paper key={item.id} withBorder p="sm" radius="sm">
-          <Group justify="space-between" align="center" gap="sm" wrap="nowrap">
-            <Box miw={0}>
-              <Text fw={700} style={{ overflowWrap: 'anywhere' }}>
-                {item.name}
-              </Text>
-              {item.description && (
-                <Text c="dimmed" size="sm" style={{ overflowWrap: 'anywhere' }}>
-                  {item.description}
-                </Text>
-              )}
-            </Box>
-
-            <Tooltip label={`Delete ${item.name}`}>
-              <ActionIcon
-                aria-label={`Delete ${item.name}`}
-                variant="subtle"
-                color="red"
-                loading={deleteItem.isPending && deleteItem.variables === item.id}
-                disabled={deleteItem.isPending}
-                onClick={() => deleteItem.mutate(item.id)}
-              >
-                <Trash2 size={18} />
-              </ActionIcon>
-            </Tooltip>
-          </Group>
-        </Paper>
+        <GroceryItemRow
+          key={item.id}
+          item={item}
+          opened={openedItemId === item.id}
+          onOpen={() => setOpenedItemId(item.id)}
+          onToggle={() => setOpenedItemId((current) => current === item.id ? null : item.id)}
+          onClose={() => setOpenedItemId((current) => current === item.id ? null : current)}
+          onDelete={() => deleteItem.mutate(item.id)}
+          deleting={deleteItem.isPending && deleteItem.variables === item.id}
+          deleteDisabled={deleteItem.isPending}
+        />
       ))}
     </Stack>
   );

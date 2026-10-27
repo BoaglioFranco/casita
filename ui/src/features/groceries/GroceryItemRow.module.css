@@ -1,0 +1,10 @@
+.deleteButton {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.deleteButton:focus-visible,
+.deleteButton[data-loading] {
+  opacity: 1;
+  pointer-events: auto;
+}
