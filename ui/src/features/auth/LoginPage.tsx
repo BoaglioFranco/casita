@@ -25,7 +25,7 @@ export function LoginPage() {
     mutationFn: login,
     onSuccess: async () => {
       setPassword('');
-      await client.invalidateQueries();
+      client.clear();
       await navigate({ to: '/' });
     },
   });

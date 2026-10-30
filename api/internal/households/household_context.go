@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// RequireAuth populates the context with these parameters and guarantees that they will be valid UUIDs.
 func MemberIDFromContext(c *gin.Context) uuid.UUID {
 	memberID := c.MustGet("member_id").(uuid.UUID)
 	return memberID

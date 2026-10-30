@@ -12,15 +12,23 @@ import {
   Tooltip,
 } from '@mantine/core';
 import { RefreshCcw } from 'lucide-react';
-import { appConfig } from '../../app/config';
+import { ListIcon } from '../list-icons/ListIcon';
+import { listIconCatalog } from '../list-icons/icon-catalog';
+import type { HouseholdList } from '../lists/types';
 import { NotificationPrompt } from '../notifications/NotificationPrompt';
 import { GroceryItemForm } from './GroceryItemForm';
 import { GroceryItemList } from './GroceryItemList';
 import { groceryItemsQuery } from './queries';
 
-export function GroceryPage() {
-  const { householdId, listId } = appConfig;
+type GroceryPageProps = {
+  householdId: string;
+  listId: string;
+  list: HouseholdList;
+};
+
+export function GroceryPage({ householdId, listId, list }: GroceryPageProps) {
   const itemsQuery = useSuspenseQuery(groceryItemsQuery(householdId, listId));
+  const icon = listIconCatalog.find((candidate) => candidate.id === list.icon);
 
   return (
     <Box component="main" flex={1} w="100%">
@@ -28,15 +36,25 @@ export function GroceryPage() {
       <Container size="md" px="md" py="md">
         <Stack gap="md">
           <Group justify="space-between" align="center" gap="md" wrap="nowrap">
-            <Title order={1} fz={{ base: 32, sm: 48 }} lh={1} lts={0}>
-              Groceries
-            </Title>
+            <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
+              {icon && <ListIcon iconId={icon.id} size={32} style={{ flexShrink: 0 }} />}
+              <Title
+                order={1}
+                fz={{ base: 32, sm: 48 }}
+                lh={1}
+                lts={0}
+                style={{ overflowWrap: 'anywhere' }}
+              >
+                {list.name}
+              </Title>
+            </Group>
 
             <Tooltip label="Refresh list">
               <ActionIcon
                 aria-label="Refresh list"
                 variant="light"
                 size="lg"
+                style={{ flexShrink: 0 }}
                 loading={itemsQuery.isFetching}
                 onClick={() => itemsQuery.refetch()}
               >

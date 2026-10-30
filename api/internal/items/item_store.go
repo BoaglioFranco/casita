@@ -27,7 +27,11 @@ func (store *ItemStore) InsertItemTx(ctx context.Context, tx database.Executor, 
 }
 
 func (store *ItemStore) insertItem(ctx context.Context, exec database.Executor, params InsertItemParams) (uuid.UUID, error) {
-	query := `INSERT INTO items (list_id, name, description, created_by_member_id) VALUES ($1, $2, $3, $4) RETURNING id`
+	query := `
+		INSERT INTO items (list_id, name, description, created_by_member_id)
+		    VALUES ($1, $2, $3, $4)
+		RETURNING
+		    id`
 
 	var itemID uuid.UUID
 	err := exec.GetContext(ctx, &itemID, query, params.ListID, params.Name, params.Description, params.CreatedByMemberID)
@@ -47,7 +51,9 @@ func (store *ItemStore) DeleteItemTx(ctx context.Context, tx database.Executor, 
 }
 
 func (store *ItemStore) deleteItem(ctx context.Context, exec database.Executor, itemID uuid.UUID) error {
-	query := `DELETE FROM items WHERE id = $1`
+	query := `
+		DELETE FROM items
+		WHERE id = $1`
 
 	result, err := exec.ExecContext(ctx, query, itemID)
 	if err != nil {
@@ -67,10 +73,17 @@ func (store *ItemStore) deleteItem(ctx context.Context, exec database.Executor, 
 
 func (store *ItemStore) GetItemTx(ctx context.Context, tx database.Executor, itemID uuid.UUID) (Item, error) {
 	query := `
-		SELECT id, list_id, name, description, created_at, updated_at
-		FROM items
-		WHERE id = $1
-	`
+		SELECT
+		    id,
+		    list_id,
+		    name,
+		    description,
+		    created_at,
+		    updated_at
+		FROM
+		    items
+		WHERE
+		    id = $1`
 
 	rows := make([]itemRow, 0, 1)
 	if err := tx.SelectContext(ctx, &rows, query, itemID); err != nil {
@@ -86,19 +99,21 @@ func (store *ItemStore) GetItemTx(ctx context.Context, tx database.Executor, ite
 func (store *ItemStore) GetItemsFromList(ctx context.Context, listID uuid.UUID) ([]Item, error) {
 	query := `
 		SELECT
-			i.id,
-			i.list_id,
-			i.name,
-			i.description,
-			i.created_by_member_id,
-			m.name AS created_by_member_name,
-			i.created_at,
-			i.updated_at
-		FROM items i
-		LEFT JOIN members m ON m.id = i.created_by_member_id
-		WHERE i.list_id = $1
-		ORDER BY i.created_at DESC
-	`
+		    i.id,
+		    i.list_id,
+		    i.name,
+		    i.description,
+		    i.created_by_member_id,
+		    m.name AS created_by_member_name,
+		    i.created_at,
+		    i.updated_at
+		FROM
+		    items i
+		    LEFT JOIN members m ON m.id = i.created_by_member_id
+		WHERE
+		    i.list_id = $1
+		ORDER BY
+		    i.created_at DESC`
 
 	rows := make([]itemRow, 0)
 	if err := store.db.SelectContext(ctx, &rows, query, listID); err != nil {

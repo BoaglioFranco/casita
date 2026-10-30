@@ -19,16 +19,6 @@ func (service *ItemService) createItemHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid list id"})
 		return
 	}
-	householdIDParam, err := uuid.Parse(c.Param("householdId"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid household id"})
-		return
-	}
-	if householdIDParam != householdID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
-		return
-	}
-
 	err = c.ShouldBindJSON(params)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload", "details": err.Error()})
@@ -59,15 +49,6 @@ func (service *ItemService) removeItemHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid list id"})
 		return
 	}
-	householdIDParam, err := uuid.Parse(c.Param("householdId"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid household id"})
-		return
-	}
-	if householdIDParam != householdID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
-		return
-	}
 	itemID, err := uuid.Parse(c.Param("itemId"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item id"})
@@ -93,18 +74,6 @@ func (service *ItemService) removeItemHandler(c *gin.Context) {
 }
 
 func (service *ItemService) getItemsHandler(c *gin.Context) {
-	householdID := households.HouseholdIDFromContext(c)
-
-	householdIDParam, err := uuid.Parse(c.Param("householdId"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid household id"})
-		return
-	}
-	if householdIDParam != householdID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
-		return
-	}
-
 	listID, err := uuid.Parse(c.Param("listId"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid list id"})

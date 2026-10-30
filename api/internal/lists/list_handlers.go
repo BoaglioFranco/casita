@@ -5,24 +5,13 @@ import (
 
 	"github.com/BoaglioFranco/groceriesList/api/internal/households"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 func (service *ListService) createListHandler(c *gin.Context) {
 	params := &CreateListPayload{}
 	householdID := households.HouseholdIDFromContext(c)
 
-	householdIDParam, err := uuid.Parse(c.Param("householdId"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid household id"})
-		return
-	}
-	if householdIDParam != householdID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
-		return
-	}
-
-	err = c.ShouldBindJSON(params)
+	err := c.ShouldBindJSON(params)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload", "details": err.Error()})
 		return
@@ -34,4 +23,16 @@ func (service *ListService) createListHandler(c *gin.Context) {
 		return
 	}
 	c.Status(http.StatusCreated)
+}
+
+func (service *ListService) getListsHandler(c *gin.Context) {
+	householdID := households.HouseholdIDFromContext(c)
+
+	lists, err := service.listStore.GetLists(c.Request.Context(), householdID)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"lists": lists})
 }

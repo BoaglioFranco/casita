@@ -1,4 +1,14 @@
 {
+  "runOnSave.commands": [
+    {
+      "languages": ["go"],
+      "commandBeforeSaving": "go-inline-pgformatter.formatAllSql",
+      "runIn": "vscode"
+    }
+  ],
+  "goPgFormat.matchSpacing": true,
+  "goPgFormat.pgFormatPath": "/home/franco/.local/share/pgformatter-5.10/pg_format",
+  "goPgFormat.addTabs": 1,
   "files.associations": {
     "*.sql": "sql"
   },

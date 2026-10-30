@@ -21,7 +21,9 @@ func NewHouseholdStore(db *database.Database) *HouseholdStore {
 }
 
 func (store *HouseholdStore) InsertHousehold(ctx context.Context, name string) error {
-	query := `INSERT INTO households (name) VALUES ($1)`
+	query := `
+		INSERT INTO households (name)
+		    VALUES ($1)`
 
 	_, err := store.db.ExecContext(ctx, query, name)
 
@@ -32,7 +34,9 @@ func (store *HouseholdStore) InsertHousehold(ctx context.Context, name string) e
 }
 
 func (store *HouseholdStore) InsertMember(ctx context.Context, params InsertMemberParams) error {
-	query := `INSERT INTO members (household_id, name, user_id) VALUES ($1, $2, $3)`
+	query := `
+		INSERT INTO members (household_id, name, user_id)
+		    VALUES ($1, $2, $3)`
 
 	_, err := store.db.ExecContext(ctx, query, params.HouseholdID, params.Name, params.UserID)
 	if err != nil {
@@ -43,11 +47,17 @@ func (store *HouseholdStore) InsertMember(ctx context.Context, params InsertMemb
 }
 
 func (store *HouseholdStore) GetMember(ctx context.Context, memberID uuid.UUID) (*Member, error) {
+
 	query := `
-		SELECT id, household_id, name, user_id
-		FROM members
-		WHERE id = $1
-	`
+		SELECT
+		    id,
+		    household_id,
+		    name,
+		    user_id
+		FROM
+		    members
+		WHERE
+		    id = $1`
 
 	members := make([]Member, 0, 1)
 	if err := store.db.SelectContext(ctx, &members, query, memberID); err != nil {
@@ -61,7 +71,17 @@ func (store *HouseholdStore) GetMember(ctx context.Context, memberID uuid.UUID) 
 }
 
 func (store *HouseholdStore) MemberByUserID(ctx context.Context, userID uuid.UUID, householdID uuid.UUID) (*Member, error) {
-	query := `SELECT id, household_id, name, user_id FROM members WHERE user_id = $1 AND household_id = $2`
+	query := `
+		SELECT
+		    id,
+		    household_id,
+		    name,
+		    user_id
+		FROM
+		    members
+		WHERE
+		    user_id = $1
+		    AND household_id = $2`
 	var member Member
 	if err := store.db.GetContext(ctx, &member, query, userID, householdID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -72,4 +92,27 @@ func (store *HouseholdStore) MemberByUserID(ctx context.Context, userID uuid.UUI
 	}
 
 	return &member, nil
+}
+
+func (store *HouseholdStore) HouseholdsByUserID(ctx context.Context, userID uuid.UUID) ([]Household, error) {
+	query := `
+		SELECT
+		    h.id,
+		    h.created_at,
+		    h.name
+		FROM
+		    households h
+		    INNER JOIN members m ON m.household_id = h.id
+		WHERE
+		    m.user_id = $1
+		ORDER BY
+		    h.created_at ASC`
+
+	households := make([]Household, 0, 1)
+	err := store.db.SelectContext(ctx, &households, query, userID)
+	if err != nil {
+		return nil, err
+	}
+	return households, nil
+
 }

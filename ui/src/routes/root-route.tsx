@@ -4,16 +4,19 @@ import { Alert, AppShell, Button, Center, Container, Loader, Stack, Text, Title 
 import { getErrorMessage } from '../lib/api-client';
 import { AppHeader } from '../components/layout/AppHeader';
 
-export type RouterContext = { queryClient: QueryClient };
+export type RouterContext = { queryClient: QueryClient; householdId?: string };
 
 function RootLayout() {
   const showAccountMenu = useRouterState({
     select: (state) => state.location.pathname !== '/login',
   });
+  const householdId = useRouterState({
+    select: (state) => state.matches[state.matches.length - 1]?.context.householdId,
+  });
 
   return (
     <AppShell header={{ height: { base: 72, sm: 80 } }}>
-      <AppHeader showAccountMenu={showAccountMenu} />
+      <AppHeader showAccountMenu={showAccountMenu} householdId={householdId} />
       <AppShell.Main display="flex">
         <Outlet />
       </AppShell.Main>

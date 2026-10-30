@@ -12,15 +12,20 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { ChevronDown, House, Settings, UsersRound } from 'lucide-react';
-import { appConfig } from '../../app/config';
 import { currentMemberQuery } from '../../features/households/queries';
 
-export function AppHeader({ showAccountMenu = true }: { showAccountMenu?: boolean }) {
+export function AppHeader({
+  showAccountMenu = true,
+  householdId,
+}: {
+  showAccountMenu?: boolean;
+  householdId?: string;
+}) {
   const theme = useMantineTheme();
   const primaryColor = theme.colors[theme.primaryColor][6];
   const memberQuery = useQuery({
-    ...currentMemberQuery(appConfig.householdId),
-    enabled: showAccountMenu,
+    ...currentMemberQuery(householdId ?? ''),
+    enabled: showAccountMenu && Boolean(householdId),
   });
   const memberName = memberQuery.data?.name ?? 'Account';
   const memberInitial = memberName.charAt(0).toUpperCase();
@@ -66,7 +71,12 @@ export function AppHeader({ showAccountMenu = true }: { showAccountMenu?: boolea
 
               <Menu.Dropdown>
                 <Menu.Label>Account</Menu.Label>
-                <Menu.Item component={Link} to="/profile" leftSection={<Settings size={16} />}>
+                <Menu.Item
+                  renderRoot={(props) => (
+                    <Link {...props} to="/profile" search={{ householdId }} />
+                  )}
+                  leftSection={<Settings size={16} />}
+                >
                   Profile settings
                 </Menu.Item>
                 <Menu.Item leftSection={<UsersRound size={16} />} disabled>

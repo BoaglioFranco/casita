@@ -1,3 +1,7 @@
 {
-  "recommendations": ["redhat.vscode-yaml"]
+  "recommendations": [
+    "redhat.vscode-yaml",
+    "passioinc.go-inline-pgformatter",
+    "pucelle.run-on-save"
+  ]
 }

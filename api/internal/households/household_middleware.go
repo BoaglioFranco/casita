@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/BoaglioFranco/groceriesList/api/internal/utils"
+	"github.com/BoaglioFranco/groceriesList/api/internal/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -20,7 +20,7 @@ func (service *HouseholdService) RequireMembership(c *gin.Context) {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	userID := utils.UserIDFromContext(c)
+	userID := auth.UserIDFromContext(c)
 	member, err := service.householdStore.MemberByUserID(c.Request.Context(), userID, householdID)
 	if err != nil {
 		if errors.Is(err, ErrMemberNotFound) {

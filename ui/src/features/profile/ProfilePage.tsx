@@ -1,8 +1,7 @@
 import { Box, Container, Stack, Text, Title } from '@mantine/core';
-import { appConfig } from '../../app/config';
 import { NotificationSettings } from '../notifications/NotificationSettings';
 
-export function ProfilePage() {
+export function ProfilePage({ householdId }: { householdId?: string }) {
   return (
     <Box component="main" flex={1} w="100%">
       <Container size="md" px="md" py="md">
@@ -16,7 +15,11 @@ export function ProfilePage() {
             </Text>
           </div>
 
-          <NotificationSettings householdId={appConfig.householdId} />
+          {householdId ? (
+            <NotificationSettings householdId={householdId} />
+          ) : (
+            <Text c="dimmed">Join a household to manage its notifications.</Text>
+          )}
         </Stack>
       </Container>
     </Box>

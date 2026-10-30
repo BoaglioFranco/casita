@@ -1,4 +1,5 @@
 # Agent instructions
+I recently got laid off from my job where I was a senior front end engineer. I started this project with the aim to learn. My goal is to eventually build a production grade system where i can apply backend and infra principles to improve as a software engineer that can deliver quality solutions end to end. I don't want things to be done poorly just to complete the task or to get things handed on a silver platter
 
 ## Deferred issues
 
