@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/BoaglioFranco/groceriesList/api/internal/auth"
+	"github.com/BoaglioFranco/groceriesList/api/internal/calendar"
 	"github.com/BoaglioFranco/groceriesList/api/internal/database"
 	"github.com/BoaglioFranco/groceriesList/api/internal/households"
 	"github.com/BoaglioFranco/groceriesList/api/internal/items"
@@ -52,6 +53,7 @@ func main() {
 	listsService := lists.NewListService(db)
 	itemsService := items.NewItemService(db, notificationsService)
 	householdService := households.NewHouseholdService(db)
+	calendarService := calendar.NewCalendarService(db)
 
 	authService.SetupAuthRoutes(router)
 	notificationsService.SetupPublicNotificationRoutes(router)
@@ -66,6 +68,7 @@ func main() {
 	listsService.SetupListRoutes(householdRoutes)
 	itemsService.SetupItemRoutes(householdRoutes)
 	notificationsService.SetupNotificationRoutes(householdRoutes)
+	calendarService.SetupCalendarRoutes(householdRoutes)
 
 	port := os.Getenv("PORT")
 	if port == "" {

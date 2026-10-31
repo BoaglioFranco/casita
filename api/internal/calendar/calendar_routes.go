@@ -1,0 +1,7 @@
+package calendar
+
+import "github.com/gin-gonic/gin"
+
+func (service *CalendarService) SetupCalendarRoutes(router gin.IRoutes) {
+	router.POST("/calendar/events", service.createEvent)
+}
