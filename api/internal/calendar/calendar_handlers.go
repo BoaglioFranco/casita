@@ -76,7 +76,8 @@ func (service *CalendarService) updateEvent(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func (s *CalendarService) getCalendar(c *gin.Context) {
+func (service *CalendarService) getCalendar(c *gin.Context) {
+	householdID := households.HouseholdIDFromContext()
 
 	var query GetCalendarQuery
 	if err := c.ShouldBindQuery(&query); err != nil {
@@ -86,5 +87,16 @@ func (s *CalendarService) getCalendar(c *gin.Context) {
 		})
 		return
 	}
+
+	events, err := service.calendarStore.GetEvents(c.Request.Context(), GetEventsParams{
+		From:        query.From,
+		To:          query.To,
+		HouseholdID: householdID,
+	})
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+	}
+
+	service.GenerateEventTimeline(events, query.From, query.To)
 
 }

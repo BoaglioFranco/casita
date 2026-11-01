@@ -10,6 +10,20 @@ import (
 
 var ErrEventNotFound = errors.New("event not found")
 
+type CalendarEvent struct {
+	ID                        uuid.UUID  `db:"id" json:"id"`
+	HouseholdID               *uuid.UUID `db:"household_id" json:"householdId"`
+	CreatedByMemberID         *uuid.UUID `db:"created_by_member_id" json:"createdByMemberId"`
+	Name                      string     `db:"name" json:"name"`
+	Description               *string    `db:"description" json:"description"`
+	StartsAt                  time.Time  `db:"starts_at" json:"startsAt"`
+	DurationMinutes           *int       `db:"duration_minutes" json:"durationMinutes"`
+	NotificationOffsetMinutes int        `db:"notification_offset_minutes" json:"notificationOffsetMinutes"`
+	RecurrenceRule            *string    `db:"recurrence_rule" json:"recurrenceRule"`
+	CreatedAt                 time.Time  `db:"created_at" json:"createdAt"`
+	UpdatedAt                 time.Time  `db:"updated_at" json:"updatedAt"`
+}
+
 type CalendarService struct {
 	calendarStore eventStore
 }
@@ -17,6 +31,7 @@ type CalendarService struct {
 type eventStore interface {
 	InsertEvent(ctx context.Context, params InsertEventParams) error
 	UpdateEvent(ctx context.Context, params UpdateEventStoreParams) error
+	GetEvents(ctx context.Context, params GetEventsParams) ([]CalendarEvent, error)
 }
 
 type CreateEventPayload struct {
@@ -77,4 +92,10 @@ type UpdateEventStoreParams struct {
 type GetCalendarQuery struct {
 	From time.Time `form:"from" binding:"required" time_format:"2006-01-02"`
 	To   time.Time `form:"to" binding:"required,gtfield=From" time_format:"2006-01-02"`
+}
+
+type GetEventsParams struct {
+	HouseholdID uuid.UUID
+	From        time.Time
+	To          time.Time
 }

@@ -2,6 +2,7 @@ package calendar
 
 import (
 	"context"
+	"time"
 
 	"github.com/BoaglioFranco/groceriesList/api/internal/database"
 )
@@ -48,4 +49,10 @@ func (service *CalendarService) UpdateEvent(ctx context.Context, params UpdateEv
 		NotificationOffsetMinutes: offset,
 		RecurrenceRule:            params.RecurrenceRule,
 	})
+}
+
+func (service *CalendarService) GenerateEventTimeline(events []CalendarEvent, from time.Time, to time.Time) {
+
+	//
+
 }
