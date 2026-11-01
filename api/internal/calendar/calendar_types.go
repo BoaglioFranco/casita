@@ -73,3 +73,8 @@ type UpdateEventStoreParams struct {
 	NotificationOffsetMinutes int
 	RecurrenceRule            *string
 }
+
+type GetCalendarQuery struct {
+	From time.Time `form:"from" binding:"required" time_format:"2006-01-02"`
+	To   time.Time `form:"to" binding:"required,gtfield=From" time_format:"2006-01-02"`
+}

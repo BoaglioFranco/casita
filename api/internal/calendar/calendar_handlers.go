@@ -68,9 +68,23 @@ func (service *CalendarService) updateEvent(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Event not found"})
 			return
 		}
+
 		c.Status(http.StatusInternalServerError)
 		return
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+func (s *CalendarService) getCalendar(c *gin.Context) {
+
+	var query GetCalendarQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid query parameters",
+			"details": err.Error(),
+		})
+		return
+	}
+
 }
