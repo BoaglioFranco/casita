@@ -2,10 +2,13 @@ package calendar
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+var ErrEventNotFound = errors.New("event not found")
 
 type CalendarService struct {
 	calendarStore eventStore
@@ -13,6 +16,7 @@ type CalendarService struct {
 
 type eventStore interface {
 	InsertEvent(ctx context.Context, params InsertEventParams) error
+	UpdateEvent(ctx context.Context, params UpdateEventStoreParams) error
 }
 
 type CreateEventPayload struct {
@@ -38,6 +42,30 @@ type CreateEventParams struct {
 type InsertEventParams struct {
 	HouseholdID               uuid.UUID
 	CreatedByMemberID         uuid.UUID
+	Name                      string
+	Description               *string
+	StartsAt                  time.Time
+	DurationMinutes           *int
+	NotificationOffsetMinutes int
+	RecurrenceRule            *string
+}
+
+type UpdateEventPayload CreateEventPayload
+
+type UpdateEventParams struct {
+	HouseholdID               uuid.UUID
+	EventID                   uuid.UUID
+	Name                      string
+	Description               *string
+	StartsAt                  time.Time
+	DurationMinutes           *int
+	NotificationOffsetMinutes *int
+	RecurrenceRule            *string
+}
+
+type UpdateEventStoreParams struct {
+	HouseholdID               uuid.UUID
+	EventID                   uuid.UUID
 	Name                      string
 	Description               *string
 	StartsAt                  time.Time

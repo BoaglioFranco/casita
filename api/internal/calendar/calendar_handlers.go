@@ -1,10 +1,12 @@
 package calendar
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/BoaglioFranco/groceriesList/api/internal/households"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func (service *CalendarService) createEvent(c *gin.Context) {
@@ -35,4 +37,40 @@ func (service *CalendarService) createEvent(c *gin.Context) {
 	}
 
 	c.Status(http.StatusCreated)
+}
+
+func (service *CalendarService) updateEvent(c *gin.Context) {
+	householdID := households.HouseholdIDFromContext(c)
+	params := &UpdateEventPayload{}
+
+	eventID, err := uuid.Parse(c.Param("eventId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event id"})
+		return
+	}
+	if err := c.ShouldBindJSON(params); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload", "details": err.Error()})
+		return
+	}
+
+	err = service.UpdateEvent(c.Request.Context(), UpdateEventParams{
+		HouseholdID:               householdID,
+		EventID:                   eventID,
+		Name:                      params.Name,
+		Description:               params.Description,
+		StartsAt:                  params.StartsAt,
+		DurationMinutes:           params.DurationMinutes,
+		NotificationOffsetMinutes: params.NotificationOffsetMinutes,
+		RecurrenceRule:            params.RecurrenceRule,
+	})
+	if err != nil {
+		if errors.Is(err, ErrEventNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Event not found"})
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }

@@ -31,3 +31,21 @@ func (service *CalendarService) CreateEvent(ctx context.Context, params CreateEv
 		RecurrenceRule:            params.RecurrenceRule,
 	})
 }
+
+func (service *CalendarService) UpdateEvent(ctx context.Context, params UpdateEventParams) error {
+	offset := defaultNotificationOffsetMinutes
+	if params.NotificationOffsetMinutes != nil {
+		offset = *params.NotificationOffsetMinutes
+	}
+
+	return service.calendarStore.UpdateEvent(ctx, UpdateEventStoreParams{
+		HouseholdID:               params.HouseholdID,
+		EventID:                   params.EventID,
+		Name:                      params.Name,
+		Description:               params.Description,
+		StartsAt:                  params.StartsAt,
+		DurationMinutes:           params.DurationMinutes,
+		NotificationOffsetMinutes: offset,
+		RecurrenceRule:            params.RecurrenceRule,
+	})
+}

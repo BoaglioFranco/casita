@@ -12,6 +12,10 @@ func (store eventStoreFunc) InsertEvent(ctx context.Context, params InsertEventP
 	return store(ctx, params)
 }
 
+func (store eventStoreFunc) UpdateEvent(context.Context, UpdateEventStoreParams) error {
+	panic("unexpected update")
+}
+
 func TestCreateEventResolvesNotificationOffset(t *testing.T) {
 	zero, custom := 0, 30
 	for _, tt := range []struct {

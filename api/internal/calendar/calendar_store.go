@@ -38,3 +38,36 @@ func (store *CalendarStore) InsertEvent(ctx context.Context, params InsertEventP
 
 	return nil
 }
+
+func (store *CalendarStore) UpdateEvent(ctx context.Context, params UpdateEventStoreParams) error {
+	query := `
+		UPDATE calendar_events
+		SET name = $1, description = $2, starts_at = $3,
+		    duration_minutes = $4, notification_offset_minutes = $5,
+		    recurrence_rule = $6, updated_at = CURRENT_TIMESTAMP
+		WHERE id = $7 AND household_id = $8`
+
+	result, err := store.db.ExecContext(ctx, query,
+		params.Name,
+		params.Description,
+		params.StartsAt.UTC(),
+		params.DurationMinutes,
+		params.NotificationOffsetMinutes,
+		params.RecurrenceRule,
+		params.EventID,
+		params.HouseholdID,
+	)
+	if err != nil {
+		return fmt.Errorf("unable to update calendar event: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("unable to check updated event rows: %w", err)
+	}
+	if rowsAffected == 0 {
+		return ErrEventNotFound
+	}
+
+	return nil
+}
