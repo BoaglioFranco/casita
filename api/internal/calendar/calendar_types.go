@@ -38,6 +38,7 @@ type CalendarService struct {
 type eventStore interface {
 	InsertEvent(ctx context.Context, params InsertEventParams) error
 	UpdateEvent(ctx context.Context, params UpdateEventStoreParams) error
+	DeleteEvent(ctx context.Context, params DeleteEventParams) error
 	GetEvents(ctx context.Context, params GetEventsParams) ([]CalendarEvent, error)
 }
 
@@ -105,4 +106,9 @@ type GetEventsParams struct {
 	HouseholdID uuid.UUID
 	From        time.Time
 	To          time.Time
+}
+
+type DeleteEventParams struct {
+	HouseholdID uuid.UUID
+	EventID     uuid.UUID
 }

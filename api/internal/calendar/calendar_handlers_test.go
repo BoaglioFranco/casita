@@ -14,6 +14,59 @@ import (
 	"github.com/google/uuid"
 )
 
+type deleteEventStore struct {
+	eventStoreFunc
+	delete func(context.Context, DeleteEventParams) error
+}
+
+func (store deleteEventStore) DeleteEvent(ctx context.Context, params DeleteEventParams) error {
+	return store.delete(ctx, params)
+}
+
+func TestDeleteEvent(t *testing.T) {
+	householdID, eventID := uuid.New(), uuid.New()
+	for _, tt := range []struct {
+		name   string
+		id     string
+		err    error
+		status int
+	}{
+		{"deleted", eventID.String(), nil, http.StatusNoContent},
+		{"invalid id", "bad-id", nil, http.StatusBadRequest},
+		{"not found", eventID.String(), ErrEventNotFound, http.StatusNotFound},
+		{"store error", eventID.String(), errors.New("delete failed"), http.StatusInternalServerError},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			called := false
+			service := &CalendarService{calendarStore: deleteEventStore{
+				delete: func(ctx context.Context, params DeleteEventParams) error {
+					called = true
+					if params.HouseholdID != householdID || params.EventID != eventID {
+						t.Fatalf("unexpected delete params: %+v", params)
+					}
+					return tt.err
+				},
+			}}
+			router := gin.New()
+			group := router.Group("/households/:householdId")
+			group.Use(func(c *gin.Context) { c.Set("household_id", householdID) })
+			service.SetupCalendarRoutes(group)
+			response := httptest.NewRecorder()
+			path := "/households/" + householdID.String() + "/calendar/events/" + tt.id
+			router.ServeHTTP(response, httptest.NewRequest(http.MethodDelete, path, nil))
+			if response.Code != tt.status {
+				t.Fatalf("status = %d, want %d", response.Code, tt.status)
+			}
+			if called != (tt.status != http.StatusBadRequest) {
+				t.Fatalf("unexpected store call: %v", called)
+			}
+			if tt.status == http.StatusNoContent && response.Body.Len() != 0 {
+				t.Fatalf("expected empty response, got %s", response.Body.String())
+			}
+		})
+	}
+}
+
 type getEventsStoreFunc func(context.Context, GetEventsParams) ([]CalendarEvent, error)
 
 func (store getEventsStoreFunc) InsertEvent(context.Context, InsertEventParams) error {
@@ -26,6 +79,10 @@ func (store getEventsStoreFunc) UpdateEvent(context.Context, UpdateEventStorePar
 
 func (store getEventsStoreFunc) GetEvents(ctx context.Context, params GetEventsParams) ([]CalendarEvent, error) {
 	return store(ctx, params)
+}
+
+func (store getEventsStoreFunc) DeleteEvent(context.Context, DeleteEventParams) error {
+	panic("unexpected delete")
 }
 
 func TestGetCalendar(t *testing.T) {
@@ -69,7 +126,7 @@ func TestGetCalendar(t *testing.T) {
 			group.Use(func(c *gin.Context) { c.Set("household_id", householdID) })
 			service.SetupCalendarRoutes(group)
 			response := httptest.NewRecorder()
-			router.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/households/"+householdID.String()+"/"+tt.query, nil))
+			router.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/households/"+householdID.String()+"/calendar"+tt.query, nil))
 			if response.Code != tt.status {
 				t.Fatalf("status = %d, want %d; body = %s", response.Code, tt.status, response.Body.String())
 			}
@@ -111,6 +168,10 @@ func (store updateEventStoreFunc) UpdateEvent(ctx context.Context, params Update
 
 func (store updateEventStoreFunc) GetEvents(context.Context, GetEventsParams) ([]CalendarEvent, error) {
 	panic("unexpected get")
+}
+
+func (store updateEventStoreFunc) DeleteEvent(context.Context, DeleteEventParams) error {
+	panic("unexpected delete")
 }
 
 func TestUpdateEvent(t *testing.T) {

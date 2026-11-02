@@ -72,6 +72,27 @@ func (store *CalendarStore) UpdateEvent(ctx context.Context, params UpdateEventS
 	return nil
 }
 
+func (store *CalendarStore) DeleteEvent(ctx context.Context, params DeleteEventParams) error {
+	query := `
+		DELETE FROM calendar_events
+		WHERE id = $1 AND household_id = $2`
+
+	result, err := store.db.ExecContext(ctx, query, params.EventID, params.HouseholdID)
+	if err != nil {
+		return fmt.Errorf("unable to delete calendar event: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("unable to check deleted event rows: %w", err)
+	}
+	if rowsAffected == 0 {
+		return ErrEventNotFound
+	}
+
+	return nil
+}
+
 func (store *CalendarStore) GetEvents(ctx context.Context, params GetEventsParams) ([]CalendarEvent, error) {
 	query := `
 		SELECT * FROM calendar_events

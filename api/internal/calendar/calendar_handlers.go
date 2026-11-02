@@ -84,6 +84,31 @@ func (service *CalendarService) updateEvent(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (service *CalendarService) deleteEvent(c *gin.Context) {
+	householdID := households.HouseholdIDFromContext(c)
+
+	eventID, err := uuid.Parse(c.Param("eventId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event id"})
+		return
+	}
+
+	err = service.calendarStore.DeleteEvent(c.Request.Context(), DeleteEventParams{
+		HouseholdID: householdID,
+		EventID:     eventID,
+	})
+	if err != nil {
+		if errors.Is(err, ErrEventNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Event not found"})
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
 func (service *CalendarService) getCalendar(c *gin.Context) {
 	householdID := households.HouseholdIDFromContext(c)
 

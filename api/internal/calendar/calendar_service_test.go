@@ -55,6 +55,10 @@ func (store eventStoreFunc) GetEvents(context.Context, GetEventsParams) ([]Calen
 	panic("unexpected get")
 }
 
+func (store eventStoreFunc) DeleteEvent(context.Context, DeleteEventParams) error {
+	panic("unexpected delete")
+}
+
 func TestValidateRecurrenceRule(t *testing.T) {
 	valid, empty, invalid := "FREQ=DAILY;INTERVAL=2", "", "FREQ=INVALID"
 	for _, tt := range []struct {
