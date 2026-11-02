@@ -80,11 +80,11 @@ func (store *CalendarStore) GetEvents(ctx context.Context, params GetEventsParam
 		    (
 		      recurrence_rule IS NULL
 		      AND starts_at >= $2
-		      AND starts_at < $3
+		      AND starts_at <= $3
 		    )
 		    OR (
 		      recurrence_rule IS NOT NULL
-		      AND starts_at < $3
+		      AND starts_at <= $3
 		    )
 		  )`
 	events := make([]CalendarEvent, 0, 1)

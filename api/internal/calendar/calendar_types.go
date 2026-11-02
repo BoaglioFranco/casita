@@ -24,6 +24,12 @@ type CalendarEvent struct {
 	UpdatedAt                 time.Time  `db:"updated_at" json:"updatedAt"`
 }
 
+type CalendarOccurrence struct {
+	Event    CalendarEvent `json:"event"`
+	StartsAt time.Time     `json:"startsAt"`
+	EndsAt   time.Time     `json:"endsAt"`
+}
+
 type CalendarService struct {
 	calendarStore eventStore
 }
