@@ -16,9 +16,11 @@ dev-db:
 db-up:
 	psql "$(DATABASE_URL)" -v ON_ERROR_STOP=1 -f migrations/001_init.up.sql
 	psql "$(DATABASE_URL)" -v ON_ERROR_STOP=1 -f migrations/002_seed_demo.up.sql
+	psql "$(DATABASE_URL)" -v ON_ERROR_STOP=1 -f migrations/003_events.up.sql
 
 # Roll back database migrations
 db-down:
+	psql "$(DATABASE_URL)" -v ON_ERROR_STOP=1 -f migrations/003_events.down.sql
 	psql "$(DATABASE_URL)" -v ON_ERROR_STOP=1 -f migrations/002_seed_demo.down.sql
 	psql "$(DATABASE_URL)" -v ON_ERROR_STOP=1 -f migrations/001_init.down.sql
 
