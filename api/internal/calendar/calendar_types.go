@@ -9,6 +9,7 @@ import (
 )
 
 var ErrEventNotFound = errors.New("event not found")
+var ErrInvalidRecurrenceRule = errors.New("invalid recurrence rule")
 
 type CalendarEvent struct {
 	ID                        uuid.UUID  `db:"id" json:"id"`

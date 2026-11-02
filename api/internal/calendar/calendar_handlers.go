@@ -32,6 +32,10 @@ func (service *CalendarService) createEvent(c *gin.Context) {
 		RecurrenceRule:            params.RecurrenceRule,
 	})
 	if err != nil {
+		if errors.Is(err, ErrInvalidRecurrenceRule) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid recurrence rule", "details": err.Error()})
+			return
+		}
 		c.Status(http.StatusInternalServerError)
 		return
 	}
@@ -64,6 +68,10 @@ func (service *CalendarService) updateEvent(c *gin.Context) {
 		RecurrenceRule:            params.RecurrenceRule,
 	})
 	if err != nil {
+		if errors.Is(err, ErrInvalidRecurrenceRule) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid recurrence rule", "details": err.Error()})
+			return
+		}
 		if errors.Is(err, ErrEventNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Event not found"})
 			return
@@ -77,7 +85,7 @@ func (service *CalendarService) updateEvent(c *gin.Context) {
 }
 
 func (service *CalendarService) getCalendar(c *gin.Context) {
-	householdID := households.HouseholdIDFromContext()
+	householdID := households.HouseholdIDFromContext(c)
 
 	var query GetCalendarQuery
 	if err := c.ShouldBindQuery(&query); err != nil {
@@ -95,8 +103,13 @@ func (service *CalendarService) getCalendar(c *gin.Context) {
 	})
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
+		return
 	}
 
-	service.GenerateEventTimeline(events, query.From, query.To)
-
+	occurrences, err := service.GenerateEventTimeline(events, query.From, query.To)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"from": query.From, "to": query.To, "occurrences": occurrences})
 }

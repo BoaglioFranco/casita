@@ -2,6 +2,7 @@ package calendar
 
 import (
 	"context"
+	"fmt"
 	"slices"
 	"time"
 
@@ -19,6 +20,10 @@ func NewCalendarService(db *database.Database) *CalendarService {
 }
 
 func (service *CalendarService) CreateEvent(ctx context.Context, params CreateEventParams) error {
+	if err := validateRecurrenceRule(params.RecurrenceRule); err != nil {
+		return err
+	}
+
 	offset := defaultNotificationOffsetMinutes
 	if params.NotificationOffsetMinutes != nil {
 		offset = *params.NotificationOffsetMinutes
@@ -37,6 +42,10 @@ func (service *CalendarService) CreateEvent(ctx context.Context, params CreateEv
 }
 
 func (service *CalendarService) UpdateEvent(ctx context.Context, params UpdateEventParams) error {
+	if err := validateRecurrenceRule(params.RecurrenceRule); err != nil {
+		return err
+	}
+
 	offset := defaultNotificationOffsetMinutes
 	if params.NotificationOffsetMinutes != nil {
 		offset = *params.NotificationOffsetMinutes
@@ -52,6 +61,16 @@ func (service *CalendarService) UpdateEvent(ctx context.Context, params UpdateEv
 		NotificationOffsetMinutes: offset,
 		RecurrenceRule:            params.RecurrenceRule,
 	})
+}
+
+func validateRecurrenceRule(rule *string) error {
+	if rule == nil {
+		return nil
+	}
+	if _, err := rrule.StrToRRule(*rule); err != nil {
+		return fmt.Errorf("%w: %v", ErrInvalidRecurrenceRule, err)
+	}
+	return nil
 }
 
 func (service *CalendarService) GenerateEventTimeline(events []CalendarEvent, from time.Time, to time.Time) (occurrences []CalendarOccurrence, err error) {
