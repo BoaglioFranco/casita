@@ -5,8 +5,17 @@ import { loginRoute } from '../routes/login-route';
 import { listRoute } from '../routes/list-route';
 import { profileRoute } from '../routes/profile-route';
 import { rootRoute } from '../routes/root-route';
+import { calendarRoute } from '../routes/calendar-route';
+import { listsRoute } from '../routes/lists-route';
 
-const routeTree = rootRoute.addChildren([indexRoute, loginRoute, listRoute, profileRoute]);
+const routeTree = rootRoute.addChildren([
+  indexRoute,
+  loginRoute,
+  listsRoute,
+  listRoute,
+  calendarRoute,
+  profileRoute,
+]);
 
 export const router = createRouter({
   routeTree,

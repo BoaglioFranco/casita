@@ -13,6 +13,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { ChevronDown, House, Settings, UsersRound } from 'lucide-react';
 import { currentMemberQuery } from '../../features/households/queries';
+import { FeatureNavigation } from './FeatureNavigation';
 
 export function AppHeader({
   showAccountMenu = true,
@@ -32,7 +33,7 @@ export function AppHeader({
 
   return (
     <AppShell.Header bg={primaryColor} withBorder={false}>
-      <Container size="md" h="100%" px="md">
+      <Container size="lg" h={{ base: 72, sm: 80 }} px="md">
         <Group h="100%" justify="space-between" wrap="nowrap">
           <UnstyledButton component={Link} to="/" c="white" aria-label="Go to Casita home">
             <Group gap="xs" align="center" wrap="nowrap">
@@ -72,9 +73,7 @@ export function AppHeader({
               <Menu.Dropdown>
                 <Menu.Label>Account</Menu.Label>
                 <Menu.Item
-                  renderRoot={(props) => (
-                    <Link {...props} to="/profile" search={{ householdId }} />
-                  )}
+                  renderRoot={(props) => <Link {...props} to="/profile" search={{ householdId }} />}
                   leftSection={<Settings size={16} />}
                 >
                   Profile settings
@@ -87,6 +86,16 @@ export function AppHeader({
           )}
         </Group>
       </Container>
+      {showAccountMenu && householdId && (
+        <div
+          style={{
+            background: 'var(--mantine-color-body)',
+            borderBottom: '1px solid var(--mantine-color-default-border)',
+          }}
+        >
+          <FeatureNavigation householdId={householdId} />
+        </div>
+      )}
     </AppShell.Header>
   );
 }

@@ -1,0 +1,24 @@
+.container {
+  height: 48px;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+  height: 100%;
+  padding: 0 var(--mantine-spacing-xs);
+  border-bottom: 3px solid transparent;
+  color: var(--mantine-color-dimmed);
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 600;
+}
+
+.link[data-active] {
+  border-bottom-color: var(--mantine-primary-color-filled);
+  color: var(--mantine-primary-color-filled);
+}
+
+.link:hover {
+  color: var(--mantine-primary-color-filled);
+}

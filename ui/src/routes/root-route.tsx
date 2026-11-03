@@ -1,6 +1,16 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { createRootRouteWithContext, Outlet, useRouterState } from '@tanstack/react-router';
-import { Alert, AppShell, Button, Center, Container, Loader, Stack, Text, Title } from '@mantine/core';
+import {
+  Alert,
+  AppShell,
+  Button,
+  Center,
+  Container,
+  Loader,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core';
 import { getErrorMessage } from '../lib/api-client';
 import { AppHeader } from '../components/layout/AppHeader';
 
@@ -15,7 +25,14 @@ function RootLayout() {
   });
 
   return (
-    <AppShell header={{ height: { base: 72, sm: 80 } }}>
+    <AppShell
+      header={{
+        height: {
+          base: householdId && showAccountMenu ? 120 : 72,
+          sm: householdId && showAccountMenu ? 128 : 80,
+        },
+      }}
+    >
       <AppHeader showAccountMenu={showAccountMenu} householdId={householdId} />
       <AppShell.Main display="flex">
         <Outlet />

@@ -71,9 +71,12 @@ The following criteria apply only if backend overlap selection is chosen:
 
 - Initially fetch a rolling four-week window: two weeks before now and two
   weeks after now, rather than a calendar month.
-- Fetch the next batch as the user approaches the end of the loaded timeline.
-  Retain previously fetched events so ongoing events from earlier batches stay
-  available. The exact subsequent batch size and prefetch threshold are undecided.
+- The UI implementation in `ui/src/features/calendar/CalendarPage.tsx` fetches
+  adjacent 28-day batches when the visible range comes within three days of either
+  loaded boundary. It retains previously fetched events so ongoing events from
+  earlier batches stay available. A date jump more than 28 days beyond the loaded
+  range opens a new centered four-week window; inactive windows remain cached
+  for 30 minutes. The initial-load overlap edge case also applies to these jumps.
 - Avoid showing duplicate occurrences when combining batches. Both range
   endpoints are currently inclusive, so adjacent batches sharing a boundary
   can return the same occurrence. Event ID plus occurrence start identifies an
