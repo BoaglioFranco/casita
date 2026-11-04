@@ -7,7 +7,8 @@ RUN go mod download
 COPY . . 
 RUN mkdir -p /out \
     && go build -o /out/api ./cmd \
-    && go build -o /out/create-user ./cmd/create-user
+    && go build -o /out/create-user ./cmd/create-user \
+    && go build -o /out/migrate ./cmd/migrate
 
 FROM debian:bookworm-slim as runtime
 
@@ -15,9 +16,8 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates  \
     && rm -rf /var/lib/apt/lists/*
     
-COPY migrations /app/migrations
-
 COPY --from=build /out/api /app/api
 COPY --from=build /out/create-user /app/create-user
+COPY --from=build /out/migrate /app/migrate
 
 CMD ["/app/api"]

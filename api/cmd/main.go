@@ -13,6 +13,7 @@ import (
 	"github.com/BoaglioFranco/groceriesList/api/internal/items"
 	"github.com/BoaglioFranco/groceriesList/api/internal/lists"
 	"github.com/BoaglioFranco/groceriesList/api/internal/notifications"
+	"github.com/BoaglioFranco/groceriesList/api/migrations"
 	"github.com/gin-gonic/gin"
 )
 
@@ -47,6 +48,10 @@ func main() {
 		log.Fatalf("failed to open database: %v", err)
 	}
 	defer db.Close()
+
+	if err := migrations.Up(databaseURL); err != nil {
+		log.Fatalf("failed to migrate database: %v", err)
+	}
 
 	authService := auth.NewAuthService(db)
 	notificationsService := notifications.NewNotificationService(db, vapidPublicKey, vapidPrivateKey)

@@ -1,4 +1,4 @@
-.PHONY: dev dev-db db-up db-down db-reset db-shell create-user test-integration
+.PHONY: dev dev-db db-up db-down db-force db-reset db-shell create-user test-integration
 
 SHELL := /bin/bash
 DATABASE_URL ?= postgres://groceries:groceries@localhost:5432/groceries?sslmode=disable
@@ -14,15 +14,16 @@ dev-db:
 
 # Apply database migrations
 db-up:
-	psql "$(DATABASE_URL)" -v ON_ERROR_STOP=1 -f migrations/001_init.up.sql
-	psql "$(DATABASE_URL)" -v ON_ERROR_STOP=1 -f migrations/002_seed_demo.up.sql
-	psql "$(DATABASE_URL)" -v ON_ERROR_STOP=1 -f migrations/003_events.up.sql
+	DATABASE_URL="$(DATABASE_URL)" go run ./cmd/migrate -action up
 
 # Roll back database migrations
 db-down:
-	psql "$(DATABASE_URL)" -v ON_ERROR_STOP=1 -f migrations/003_events.down.sql
-	psql "$(DATABASE_URL)" -v ON_ERROR_STOP=1 -f migrations/002_seed_demo.down.sql
-	psql "$(DATABASE_URL)" -v ON_ERROR_STOP=1 -f migrations/001_init.down.sql
+	DATABASE_URL="$(DATABASE_URL)" go run ./cmd/migrate -action down
+
+# Record an already-applied version; does not execute SQL. Verify the schema first.
+db-force:
+	@test -n "$(VERSION)" || (echo 'VERSION is required'; exit 1)
+	DATABASE_URL="$(DATABASE_URL)" go run ./cmd/migrate -action force -version "$(VERSION)"
 
 # Recreate the local database schema
 db-reset: db-down db-up
