@@ -1,5 +1,26 @@
 # Notifications
 
+## Service authentication
+
+`POST /notifications/subscribe` requires `Authorization: Bearer <JWT>`. The main
+backend signs the JWT with HS256 using the shared `S2S_TOKEN`; it derives the user
+ID from the authenticated session. The token must contain:
+
+- `sub`: a nonzero user UUID.
+- `iss`: `groceries-api`.
+- `aud`: `notifications` (or an audience array containing it).
+- `exp`: expiration as a Unix timestamp; issue short-lived tokens, e.g. five minutes.
+
+The service validates the signature, algorithm, issuer, audience, expiration, and
+`nbf` when present, then sets the verified UUID in Gin's `user_id` context.
+Identity headers or body fields do not establish identity. Invalid requests return
+401 without exposing token details. `/health` and `/vapid-public-key` remain public.
+
+Both services must load the same `S2S_TOKEN` into their environment. The notification
+service refuses startup if it is missing or shorter than 32 bytes. `.env` files are
+not automatically loaded by `go run`; export them or use your development runner.
+The main backend's token issuance/forwarding is not implemented yet.
+
 ## Database migrations
 
 Use the existing PostgreSQL container, with a separate `notifications` database.
