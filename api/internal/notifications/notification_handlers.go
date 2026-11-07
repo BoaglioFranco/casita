@@ -3,42 +3,25 @@ package notifications
 import (
 	"net/http"
 
-	"github.com/BoaglioFranco/groceriesList/api/internal/households"
-	"github.com/SherClockHolmes/webpush-go"
+	"github.com/BoaglioFranco/groceriesList/api/internal/auth"
 	"github.com/gin-gonic/gin"
 )
 
 func (service *NotificationService) publicVapidKeyHandler(c *gin.Context) {
-	if service.vapidPublicKey == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "VAPID public key not set",
-		})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{
-		"publicKey": service.vapidPublicKey,
-	})
+	// TODO: Retrieve the public key from the notification service.
+	c.JSON(http.StatusNotImplemented, gin.H{"error": ErrNotImplemented.Error()})
 }
 
 func (service *NotificationService) subscribeHandler(c *gin.Context) {
-	memberID := households.MemberIDFromContext(c)
-	householdID := households.HouseholdIDFromContext(c)
-	var subscription webpush.Subscription
-	if err := c.ShouldBindJSON(&subscription); err != nil {
+	var subscriptionInfo SubscriptionPayload
+	if err := c.ShouldBindJSON(&subscriptionInfo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid subscription data"})
 		return
 	}
-
-	if err := service.notificationStore.StoreSubscription(c.Request.Context(), StoreSubscriptionParams{
-		HouseholdId: householdID,
-		MemberId:    memberID,
-		Endpoint:    subscription.Endpoint,
-		P256dh:      subscription.Keys.P256dh,
-		Auth:        subscription.Keys.Auth,
-	}); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save push subscription"})
+	userID := auth.UserIDFromContext(c)
+	if err := service.subscribe(c.Request.Context(), userID, subscriptionInfo); err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": "Unable to save push subscription"})
 		return
 	}
-
 	c.Status(http.StatusOK)
 }

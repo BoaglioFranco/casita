@@ -21,6 +21,26 @@ service refuses startup if it is missing or shorter than 32 bytes. `.env` files 
 not automatically loaded by `go run`; export them or use your development runner.
 The main backend's token issuance/forwarding is not implemented yet.
 
+## Compose configuration
+
+Compose loads `api/.env.prod` for the API and `notifications/.env.prod` for this
+service. Both files are gitignored. They share `S2S_TOKEN` and VAPID keys, but use
+different `DATABASE_URL` database names and ports (API: 2345, notifications: 2346).
+Production notification database connections use `postgres:5432/notifications`.
+The API's `NOTIFICATIONS_SERVICE_URL` is `http://notifications:2346`; the notification
+container's port is internal and is not published on the host.
+
+The root `.env` still supplies `POSTGRES_*` interpolation for the PostgreSQL
+container; it does not supply application runtime environments. Its database
+credentials must agree with the service connection URLs. Changing these variables
+does not reset passwords on an already-initialized PostgreSQL volume.
+
+Before the first notification startup, create its database with
+`make -C notifications db-create` after starting PostgreSQL. Existing unversioned
+schemas require the baseline described in the migration documentation. Then run
+`docker compose up -d --build api notifications`. No containers are automatically
+recreated when editing an env file; recreate the relevant service to apply changes.
+
 ## Database migrations
 
 Use the existing PostgreSQL container, with a separate `notifications` database.

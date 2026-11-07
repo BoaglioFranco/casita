@@ -18,10 +18,11 @@ import (
 )
 
 func main() {
-	vapidPrivateKey := os.Getenv("VAPID_PRIVATE_KEY")
-	vapidPublicKey := os.Getenv("VAPID_PUBLIC_KEY")
-
 	router := gin.Default()
+
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
 
 	// Quick demo CORS handling for the static local UI.
 	router.Use(func(c *gin.Context) {
@@ -54,7 +55,7 @@ func main() {
 	}
 
 	authService := auth.NewAuthService(db)
-	notificationsService := notifications.NewNotificationService(db, vapidPublicKey, vapidPrivateKey)
+	notificationsService := notifications.NewNotificationService(os.Getenv("NOTIFICATIONS_SERVICE_URL"))
 	listsService := lists.NewListService(db)
 	itemsService := items.NewItemService(db, notificationsService)
 	householdService := households.NewHouseholdService(db)

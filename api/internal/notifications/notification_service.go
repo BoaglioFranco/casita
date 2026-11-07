@@ -1,91 +1,65 @@
 package notifications
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
-	"strings"
+	"time"
 
-	"github.com/BoaglioFranco/groceriesList/api/internal/database"
-	"github.com/SherClockHolmes/webpush-go"
+	"github.com/BoaglioFranco/groceriesList/api/internal/auth"
 	"github.com/google/uuid"
 )
 
+var ErrNotImplemented = errors.New("notification service integration is not implemented")
+
 type NotificationService struct {
-	notificationStore *NotificationStore
-	vapidPublicKey    string
-	vapidPrivateKey   string
+	httpClient http.Client
+	baseURL    string
 }
 
-func NewNotificationService(db *database.Database, vapidPublicKey string, vapidPrivateKey string) *NotificationService {
+func NewNotificationService(notificationServerURL string) *NotificationService {
 	return &NotificationService{
-		notificationStore: NewNotificationStore(db),
-		vapidPublicKey:    vapidPublicKey,
-		vapidPrivateKey:   vapidPrivateKey,
+		httpClient: http.Client{Timeout: 5 * time.Second},
+		baseURL:    notificationServerURL,
 	}
 }
 
 func (service *NotificationService) NotifyOtherMembers(ctx context.Context, householdID uuid.UUID, actorMemberID uuid.UUID, notification Notification) error {
-	subscriptions, err := service.notificationStore.GetSubscriptionsForOtherMembers(ctx, householdID, actorMemberID)
-	if err != nil {
-		return err
-	}
-
-	var deliveryErrors []error
-	for _, sub := range subscriptions {
-		if err := service.sendNotification(ctx, sub, notification); err != nil {
-			var pushErr *PushServiceError
-			if errors.As(err, &pushErr) && (pushErr.StatusCode == http.StatusNotFound || pushErr.StatusCode == http.StatusGone) {
-				if deleteErr := service.notificationStore.DeleteSubscription(ctx, sub.Endpoint); deleteErr != nil {
-					deliveryErrors = append(deliveryErrors, fmt.Errorf("remove expired push subscription: %w", deleteErr))
-				}
-			}
-			deliveryErrors = append(deliveryErrors, err)
-		}
-	}
-
-	return errors.Join(deliveryErrors...)
+	// TODO: Resolve recipients and submit delivery requests to the notification service.
+	return ErrNotImplemented
 }
 
-func (service *NotificationService) sendNotification(ctx context.Context, subscription PushSubscription, notification Notification) error {
-	payload, err := json.Marshal(notification)
+func (service *NotificationService) subscribe(ctx context.Context, userID uuid.UUID, payload SubscriptionPayload) error {
+	token, err := auth.MintS2sJWT(userID)
 	if err != nil {
 		return err
 	}
-	response, err := webpush.SendNotificationWithContext(
-		ctx,
-		payload,
-		subscription.ToWebpushSubscription(),
-		&webpush.Options{
-			Subscriber:      "francoboaglio@gmail.com",
-			VAPIDPublicKey:  service.vapidPublicKey,
-			VAPIDPrivateKey: service.vapidPrivateKey,
-			TTL:             24 * 60 * 60,
-		},
-	)
+	endpoint, err := url.JoinPath(service.baseURL, "/notifications/subscribe")
 	if err != nil {
-		var urlErr *url.Error
-		if errors.As(err, &urlErr) {
-			return fmt.Errorf("send push request: %w", urlErr.Err)
-		}
-		return fmt.Errorf("send push request: %w", err)
+		return err
 	}
-	defer response.Body.Close()
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(jsonData))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
 
-	body, readErr := io.ReadAll(io.LimitReader(response.Body, 4096))
-	if readErr != nil {
-		return fmt.Errorf("read push service response: %w", readErr)
+	res, err := service.httpClient.Do(req)
+	if err != nil {
+		return err
 	}
-	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
-		return &PushServiceError{
-			StatusCode: response.StatusCode,
-			Status:     response.Status,
-			Detail:     strings.TrimSpace(string(body)),
-		}
+	defer res.Body.Close()
+	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusMultipleChoices {
+		return fmt.Errorf("notification service returned status %d", res.StatusCode)
 	}
 
 	return nil
