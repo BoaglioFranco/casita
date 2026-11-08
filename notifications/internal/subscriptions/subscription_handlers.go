@@ -46,3 +46,16 @@ func (service *NotificationService) subscribeHandler(c *gin.Context) {
 
 	c.Status(http.StatusOK)
 }
+
+func (service *NotificationService) notifyHandler(c *gin.Context) {
+	var notiRequest NotificationRequest
+	if err := c.ShouldBindJSON(&notiRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid notification data"})
+		return
+	}
+	if err := service.Notify(c.Request.Context(), notiRequest); err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	c.Status(http.StatusOK)
+}

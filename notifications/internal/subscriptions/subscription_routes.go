@@ -8,4 +8,5 @@ func (service *NotificationService) SetupPublicNotificationRoutes(router gin.IRo
 
 func (service *NotificationService) SetupNotificationRoutes(router gin.IRoutes) {
 	router.POST("/notifications/subscribe", service.subscribeHandler)
+	router.POST("/notifications/notify", service.notifyHandler)
 }

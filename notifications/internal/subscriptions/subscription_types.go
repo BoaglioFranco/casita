@@ -13,6 +13,12 @@ type Notification struct {
 	Body  string `json:"body"`
 }
 
+type NotificationRequest struct {
+	RequestID    uuid.UUID    `json:"request_id"`
+	UserID       uuid.UUID    `json:"user_id"`
+	Notification Notification `json:"notification"`
+}
+
 type PushServiceError struct {
 	StatusCode int
 	Status     string

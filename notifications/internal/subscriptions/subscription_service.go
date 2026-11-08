@@ -28,6 +28,29 @@ func NewNotificationService(db *database.Database, vapidPublicKey, vapidPrivateK
 	}
 }
 
+func (service *NotificationService) Notify(ctx context.Context, request NotificationRequest) error {
+	subs, err := service.subscriptionStore.GetSubscriptionsByUser(ctx, request.UserID)
+	if err != nil {
+		return err
+	}
+
+	results := make(chan error, len(subs))
+	for _, sub := range subs {
+		go func(s PushSubscription) {
+			err := service.sendNotification(ctx, s, request.Notification)
+			results <- err
+		}(sub)
+	}
+
+	deliveryErrors := make([]error, 0)
+	for range subs {
+		if err := <-results; err != nil {
+			deliveryErrors = append(deliveryErrors, err)
+		}
+	}
+	return errors.Join(deliveryErrors...)
+}
+
 func (service *NotificationService) sendNotification(ctx context.Context, subscription PushSubscription, notification Notification) error {
 	payload, err := json.Marshal(notification)
 	if err != nil {
