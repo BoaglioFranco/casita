@@ -8,8 +8,12 @@ import (
 )
 
 func (service *NotificationService) publicVapidKeyHandler(c *gin.Context) {
-	// TODO: Retrieve the public key from the notification service.
-	c.JSON(http.StatusNotImplemented, gin.H{"error": ErrNotImplemented.Error()})
+	publicKey, err := service.publicVapidKey(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": "Unable to retrieve VAPID public key"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"publicKey": publicKey})
 }
 
 func (service *NotificationService) subscribeHandler(c *gin.Context) {

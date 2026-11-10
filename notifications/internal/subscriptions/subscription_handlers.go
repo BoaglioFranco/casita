@@ -10,9 +10,7 @@ import (
 
 func (service *NotificationService) publicVapidKeyHandler(c *gin.Context) {
 	if service.vapidPublicKey == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "VAPID public key not set",
-		})
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{

@@ -55,7 +55,7 @@ func main() {
 	}
 
 	authService := auth.NewAuthService(db)
-	notificationsService := notifications.NewNotificationService(os.Getenv("NOTIFICATIONS_SERVICE_URL"))
+	notificationsService := notifications.NewNotificationService(db, os.Getenv("NOTIFICATIONS_SERVICE_URL"))
 	listsService := lists.NewListService(db)
 	itemsService := items.NewItemService(db, notificationsService)
 	householdService := households.NewHouseholdService(db)

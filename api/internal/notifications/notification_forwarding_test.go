@@ -58,7 +58,7 @@ func TestSubscribeHandlerForwardsAuthenticatedIdentityAndPayload(t *testing.T) {
 				w.WriteHeader(upstreamStatus)
 			}))
 			defer upstream.Close()
-			service := NewNotificationService(upstream.URL)
+			service := NewNotificationService(nil, upstream.URL)
 			router := gin.New()
 			// Stand in for the existing session middleware's verified identity.
 			router.Use(func(c *gin.Context) { c.Set("user_id", userID); c.Next() })
@@ -93,7 +93,7 @@ func TestSubscribePropagatesRequestCancellation(t *testing.T) {
 	t.Setenv("S2S_TOKEN", "test-only-signing-secret-at-least-32-bytes")
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	service := NewNotificationService("http://127.0.0.1:1")
+	service := NewNotificationService(nil, "http://127.0.0.1:1")
 	err := service.subscribe(ctx, uuid.New(), SubscriptionPayload{})
 	if !errors.Is(err, context.Canceled) {
 		t.Fatalf("expected context cancellation, got %v", err)

@@ -94,6 +94,25 @@ func (store *HouseholdStore) MemberByUserID(ctx context.Context, userID uuid.UUI
 	return &member, nil
 }
 
+func (store *HouseholdStore) MembersByHouseholdID(ctx context.Context, householdID uuid.UUID) ([]Member, error) {
+	query := `
+		SELECT
+		    id,
+		    household_id,
+		    name,
+		    user_id
+		FROM
+		    members
+		WHERE
+		    household_id = $1`
+
+	members := make([]Member, 0)
+	if err := store.db.SelectContext(ctx, &members, query, householdID); err != nil {
+		return nil, fmt.Errorf("unable to retrieve household members: %w", err)
+	}
+	return members, nil
+}
+
 func (store *HouseholdStore) HouseholdsByUserID(ctx context.Context, userID uuid.UUID) ([]Household, error) {
 	query := `
 		SELECT

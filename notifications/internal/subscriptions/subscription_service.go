@@ -20,6 +20,11 @@ type NotificationService struct {
 	vapidPrivateKey   string
 }
 
+type deliveryResult struct {
+	subscription PushSubscription
+	err          error
+}
+
 func NewNotificationService(db *database.Database, vapidPublicKey, vapidPrivateKey string) *NotificationService {
 	return &NotificationService{
 		subscriptionStore: NewSubscriptionStore(db),
@@ -34,19 +39,28 @@ func (service *NotificationService) Notify(ctx context.Context, request Notifica
 		return err
 	}
 
-	results := make(chan error, len(subs))
+	results := make(chan deliveryResult, len(subs))
 	for _, sub := range subs {
 		go func(s PushSubscription) {
 			err := service.sendNotification(ctx, s, request.Notification)
-			results <- err
+			results <- deliveryResult{subscription: s, err: err}
 		}(sub)
 	}
 
 	deliveryErrors := make([]error, 0)
 	for range subs {
-		if err := <-results; err != nil {
-			deliveryErrors = append(deliveryErrors, err)
+		result := <-results
+		if result.err == nil {
+			continue
 		}
+		var pushErr *PushServiceError
+		if errors.As(result.err, &pushErr) && (pushErr.StatusCode == http.StatusNotFound || pushErr.StatusCode == http.StatusGone) {
+			if err := service.subscriptionStore.DeleteSubscription(ctx, result.subscription.Endpoint); err != nil {
+				deliveryErrors = append(deliveryErrors, fmt.Errorf("remove expired push subscription: %w", err))
+			}
+			continue
+		}
+		deliveryErrors = append(deliveryErrors, result.err)
 	}
 	return errors.Join(deliveryErrors...)
 }
