@@ -4,14 +4,14 @@ import { ChevronDown, ChevronUp, Plus, ShoppingBasket } from 'lucide-react';
 import { getErrorMessage } from '../../lib/api-client';
 import { useCreateGroceryItem } from './hooks';
 
-type GroceryItemFormProps = { householdId: string; listId: string };
+type GroceryItemFormProps = { listId: string };
 
-export function GroceryItemForm({ householdId, listId }: GroceryItemFormProps) {
+export function GroceryItemForm({ listId }: GroceryItemFormProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const descriptionPanelId = useId();
-  const createItem = useCreateGroceryItem(householdId, listId);
+  const createItem = useCreateGroceryItem(listId);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

@@ -8,3 +8,9 @@ export function login(credentials: LoginCredentials): Promise<void> {
     body: JSON.stringify({ email: credentials.email.trim(), password: credentials.password }),
   });
 }
+
+export type CurrentUser = { id: string; name: string; householdId: string };
+
+export function getCurrentUser(): Promise<CurrentUser> {
+  return apiRequest('/me');
+}

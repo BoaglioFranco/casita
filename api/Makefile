@@ -32,7 +32,7 @@ db-reset: db-down db-up
 db-shell:
 	psql "$(DATABASE_URL)"
 
-# Create a user and membership, prompting for the password
+# Create a user in one household, prompting for the password
 create-user:
 	@set -a; \
 	. ./.env; \

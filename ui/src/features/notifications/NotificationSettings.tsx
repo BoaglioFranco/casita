@@ -1,14 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Button, Group, Paper, Stack, Text, Title } from '@mantine/core';
 import { Bell, BellRing } from 'lucide-react';
+import { useCurrentUser } from '../auth/queries';
 import { getErrorMessage } from '../../lib/api-client';
 import type { NotificationState } from './api';
 import { useEnableNotifications } from './hooks';
 import { notificationStateQuery } from './queries';
 
-export function NotificationSettings({ householdId }: { householdId: string }) {
-  const state = useQuery(notificationStateQuery(householdId));
-  const enable = useEnableNotifications(householdId);
+export function NotificationSettings() {
+  const { id: userId } = useCurrentUser();
+  const state = useQuery(notificationStateQuery(userId));
+  const enable = useEnableNotifications();
   const isEnabled = state.data === 'enabled';
   const canEnable = state.data === 'disabled';
 

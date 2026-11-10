@@ -15,6 +15,7 @@ import { useMediaQuery } from '@mantine/hooks';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
 import { Plus } from 'lucide-react';
+import { useCurrentUser } from '../auth/queries';
 import { getErrorMessage } from '../../lib/api-client';
 import {
   addDays,
@@ -32,7 +33,8 @@ import { CreateEventModal } from './CreateEventModal';
 import { EventDetailsModal } from './EventDetailsModal';
 import type { CalendarOccurrence, CalendarView } from './types';
 
-export function CalendarPage({ householdId }: { householdId: string }) {
+export function CalendarPage() {
+  const { id: userId } = useCurrentUser();
   const desktop = useMediaQuery('(min-width: 48em)');
   const [date, setDate] = useState(() => startOfDay(new Date()));
   const [currentTimeRequest, setCurrentTimeRequest] = useState(0);
@@ -40,7 +42,7 @@ export function CalendarPage({ householdId }: { householdId: string }) {
   const [mobileView, setMobileView] = useState<'day' | 'three-days'>('day');
   const view = desktop ? desktopView : mobileView;
   const [window, setWindow] = useState(() => initialWindow(new Date()));
-  const calendar = useInfiniteQuery(calendarQuery(householdId, window));
+  const calendar = useInfiniteQuery(calendarQuery(userId, window));
   const [creatingAt, setCreatingAt] = useState<Date | null>(null);
   const [createOpened, setCreateOpened] = useState(false);
   const [selected, setSelected] = useState<CalendarOccurrence | null>(null);
@@ -203,7 +205,6 @@ export function CalendarPage({ householdId }: { householdId: string }) {
         )}
       </Stack>
       <CreateEventModal
-        householdId={householdId}
         opened={createOpened}
         initialStart={creatingAt}
         onClose={() => setCreateOpened(false)}

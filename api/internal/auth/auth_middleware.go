@@ -24,5 +24,7 @@ func (service *AuthService) RequireAuth(c *gin.Context) {
 		return
 	}
 	c.Set("user_id", session.UserID)
+	c.Set("household_id", session.HouseholdID)
+	c.Set("current_user", CurrentUser{ID: session.UserID, Name: session.Name, HouseholdID: session.HouseholdID})
 	c.Next()
 }

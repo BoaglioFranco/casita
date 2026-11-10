@@ -33,37 +33,27 @@ func NewNotificationService(db *database.Database, notificationServerURL string)
 	}
 }
 
-func (service *NotificationService) NotifyOtherMembers(ctx context.Context, householdID uuid.UUID, actorMemberID uuid.UUID, notification Notification) error {
-	members, err := service.householdStore.MembersByHouseholdID(ctx, householdID)
+func (service *NotificationService) NotifyOtherUsers(ctx context.Context, householdID uuid.UUID, actorUserID uuid.UUID, notification Notification) error {
+	userIDs, err := service.householdStore.UserIDsByHouseholdID(ctx, householdID)
 	if err != nil {
 		return err
 	}
-	var actorUserID uuid.UUID
-	for _, member := range members {
-		if member.ID == actorMemberID {
-			actorUserID = member.UserID
-			break
+	if !slices.Contains(userIDs, actorUserID) {
+		return errors.New("notification actor does not belong to the household")
+	}
+	results := make(chan error, len(userIDs)-1)
+	for _, userID := range userIDs {
+		if userID == actorUserID {
+			continue
 		}
-	}
-	if actorUserID == uuid.Nil {
-		return errors.New("notification actor is not a member of the household")
-	}
-	otherMembers := slices.DeleteFunc(members, func(m households.Member) bool {
-		return m.ID == actorMemberID
-	})
-	results := make(chan error, len(otherMembers))
-	for _, member := range otherMembers {
-		go func(m households.Member) {
+		go func(userID uuid.UUID) {
 			results <- service.notify(ctx, actorUserID, NotificationRequest{
-				RequestID:    uuid.New(),
-				UserID:       m.UserID,
-				Notification: notification,
+				RequestID: uuid.New(), UserID: userID, Notification: notification,
 			})
-		}(member)
+		}(userID)
 	}
-
 	var deliveryErrors []error
-	for range otherMembers {
+	for range len(userIDs) - 1 {
 		if err := <-results; err != nil {
 			deliveryErrors = append(deliveryErrors, err)
 		}

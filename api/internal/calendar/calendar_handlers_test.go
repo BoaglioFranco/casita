@@ -48,11 +48,11 @@ func TestDeleteEvent(t *testing.T) {
 				},
 			}}
 			router := gin.New()
-			group := router.Group("/households/:householdId")
+			group := router.Group("/")
 			group.Use(func(c *gin.Context) { c.Set("household_id", householdID) })
 			service.SetupCalendarRoutes(group)
 			response := httptest.NewRecorder()
-			path := "/households/" + householdID.String() + "/calendar/events/" + tt.id
+			path := "/calendar/events/" + tt.id
 			router.ServeHTTP(response, httptest.NewRequest(http.MethodDelete, path, nil))
 			if response.Code != tt.status {
 				t.Fatalf("status = %d, want %d", response.Code, tt.status)
@@ -122,11 +122,11 @@ func TestGetCalendar(t *testing.T) {
 				return tt.events, tt.err
 			})}
 			router := gin.New()
-			group := router.Group("/households/:householdId")
+			group := router.Group("/")
 			group.Use(func(c *gin.Context) { c.Set("household_id", householdID) })
 			service.SetupCalendarRoutes(group)
 			response := httptest.NewRecorder()
-			router.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/households/"+householdID.String()+"/calendar"+tt.query, nil))
+			router.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/calendar"+tt.query, nil))
 			if response.Code != tt.status {
 				t.Fatalf("status = %d, want %d; body = %s", response.Code, tt.status, response.Body.String())
 			}
@@ -244,7 +244,7 @@ func TestCreateEventRejectsInvalidPayload(t *testing.T) {
 			router := gin.New()
 			router.Use(func(c *gin.Context) {
 				c.Set("household_id", uuid.New())
-				c.Set("member_id", uuid.New())
+				c.Set("user_id", uuid.New())
 			})
 			service.SetupCalendarRoutes(router)
 			request := httptest.NewRequest(http.MethodPost, "/calendar/events", strings.NewReader(tt.body))
@@ -264,7 +264,7 @@ func TestCreateEventReturnsServerErrorWhenInsertFails(t *testing.T) {
 		router := gin.New()
 		router.Use(func(c *gin.Context) {
 			c.Set("household_id", uuid.New())
-			c.Set("member_id", uuid.New())
+			c.Set("user_id", uuid.New())
 		})
 		service.SetupCalendarRoutes(router)
 		body := `{"name":"Appointment","startsAt":"2026-10-31T12:00:00Z"` + offset + `}`

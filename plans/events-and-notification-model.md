@@ -1,7 +1,7 @@
 # Events and notification model
 
-Created: 2026-10-29. Updated: 2026-10-30.
-Design notes only; implementation is pending. Keep these decisions in this file.
+Created: 2026-10-29. Updated: 2026-11-10.
+Design notes for remaining notification work. Calendar CRUD and direct list push delivery already exist; the outbox/CDC pipeline below remains pending. Keep these decisions in this file.
 
 ## Implementation order
 
@@ -14,39 +14,31 @@ Design notes only; implementation is pending. Keep these decisions in this file.
 3. Add scheduled and recurring event notifications through the service.
 4. Consider one-way Google Calendar export later; it is outside the MVP.
 
-The decoupling design is recorded first below; migrating delivery waits until
-the events feature is working. Exact timing of the schema cleanup remains open.
+The remaining work is recipient preferences, durable intent delivery through the
+outbox/CDC pipeline, and scheduled notifications. Device ownership is already
+separated from the API.
 
 ## 1. Decouple notification selection from devices
 
-Remove `push_subscription_id` from `list_notification_subscriptions`.
-Selection belongs to a household member, independently of their devices:
+Device push subscriptions now live only in the notification service, keyed by the
+canonical `users.id`. Every user belongs to exactly one household. The API no
+longer has `members`, `push_subscriptions`, or `list_notification_subscriptions`.
+Current list delivery targets every other user in the actor's household, independent
+of device count. Per-list recipient selection is future work, not implemented by
+the identity refactor.
+
+If per-list selection is added, its API-owned model should be:
 
 ```text
 list_notification_subscriptions
   list_id    FK -> lists
-  member_id  FK -> members
-  PRIMARY KEY (list_id, member_id)
+  user_id    FK -> users
+  PRIMARY KEY (list_id, user_id)
 ```
 
-A member can have multiple `push_subscriptions`. Delivery resolves all devices
-for subscribed members. Adding or removing a device must not change list preferences.
-
-The current schema in `api/migrations/001_init.up.sql` includes
-`push_subscription_id`; current delivery in
-`api/internal/notifications/notification_store.go` queries household subscriptions
-without consulting list selection. Both need to follow the intended model.
-
-Acceptance criteria:
-
-- [ ] List selection no longer references an individual push subscription.
-- [ ] Each list/member pair can occur only once.
-- [ ] List delivery honors selection and resolves all selected members' devices.
-- [ ] Adding or removing devices preserves list selection.
-- [ ] Update the existing initial migration in place.
-
-The existing initial migration can be edited in place; a separate migration is
-not required for this change.
+Delivery should resolve the selected users' devices through the notification
+service. Device changes must not alter list preferences. Introduce this table only
+when implementing the preference feature; do not restore the removed device coupling.
 
 ## 2. Proposed event model
 
@@ -54,7 +46,7 @@ not required for this change.
 events
   id
   household_id              FK -> households
-  created_by_member_id      FK -> members
+  created_by_user_id        FK -> users
   title
   description               nullable
   starts_at                 TIMESTAMPTZ
@@ -66,9 +58,9 @@ events
 
 event_notification_settings
   event_id                  FK -> events
-  member_id                 FK -> members
+  user_id                   FK -> users
   enabled                   default true
-  PRIMARY KEY (event_id, member_id)
+  PRIMARY KEY (event_id, user_id)
 ```
 
 - Events are shared and visible across the household.
@@ -78,11 +70,11 @@ event_notification_settings
   repeat from `starts_at` every 24 hours and 14 days respectively.
 - End time is derived from start plus duration, for each occurrence.
 - Everyone is selected for notifications by default. Authorized editors can
-  toggle members on creation or edit; members can toggle themselves.
-- Event selection applies across all of a member's devices, as with lists.
+  toggle users on creation or edit; users can toggle themselves.
+- Event selection applies across all of a user's devices, as with lists.
 - One-way export to Google Calendar is desired; its model remains undecided.
 
-Recurrence syntax, duration default, and behavior for newly joined members remain
+Recurrence syntax, duration default, and behavior for newly joined users remain
 to be decided. Whole-series versus individual-occurrence edits also remains open.
 
 Calendar date-range queries expand recurrence rules for the requested range;
@@ -120,7 +112,7 @@ retains messages; the notification service handles notification timing.
 
 | Main backend | Notification service |
 | --- | --- |
-| Events, lists, household membership and permissions | Device push subscriptions |
+| Events, lists, household usership and permissions | Device push subscriptions |
 | Event recurrence and calendar rendering | Notification schedule copies and recurrence expansion for delivery |
 | Entity-specific recipient selection | Generation of concrete upcoming jobs |
 | Notification intent and schedule changes | Job claiming, leases, sending, retries, delivery history |
@@ -158,7 +150,7 @@ workload advantage has been established.
 
 - Message contract, acceptance semantics, Kafka keys/order, consumer recovery,
   and safe handling of retries and stale versions.
-- Whether a job represents an occurrence, member, or device; tracking partial
+- Whether a job represents an occurrence, user, or device; tracking partial
   success without unnecessarily retrying successful device deliveries.
 - Generation horizon, polling interval, lease duration/renewal, retry policy,
   and how late a reminder may be delivered.

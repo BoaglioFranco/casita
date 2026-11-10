@@ -2,12 +2,12 @@ import { queryOptions } from '@tanstack/react-query';
 import { getLists } from './api';
 
 export const listKeys = {
-  household: (householdId: string) => ['lists', householdId] as const,
+  user: (userId: string) => ['lists', userId] as const,
 };
 
-export function listsQuery(householdId: string) {
+export function listsQuery(userId: string) {
   return queryOptions({
-    queryKey: listKeys.household(householdId),
-    queryFn: () => getLists(householdId),
+    queryKey: listKeys.user(userId),
+    queryFn: () => getLists(),
   });
 }

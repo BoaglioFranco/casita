@@ -1,62 +1,92 @@
 # Database migrations
 
 The API and notification service run golang-migrate before accepting HTTP requests.
-SQL is embedded in each binary, independent of the working directory. Each service
-uses `DATABASE_URL` and owns the migration history of its separate database.
-The database must already exist and credentials must permit schema changes.
+SQL is embedded in each binary. Each service uses `DATABASE_URL` and owns the
+migration history of its separate database. Never point both services at the same
+database. PostgreSQL 18 is required by the API's `uuidv7()` defaults.
 
-PostgreSQL can stay in Docker: the Go driver connects through its published port.
-Use `localhost:5432` from the host and `postgres:5432` inside the Compose network.
-Make targets can be run from either service directory:
+The databases must already exist and credentials must permit schema changes.
+Use `localhost:5432` from the host and `postgres:5432` inside Compose.
+`make -C notifications db-create` creates the notification database on the local
+Compose PostgreSQL instance if it does not exist yet.
 
-```bash
-make db-up       # pending migrations only; also happens automatically on startup
-make db-down     # explicitly roll back ALL versions, deleting application data
-```
-
-Override `DATABASE_URL` for non-default connection details. Never point both
-services at the same database. `notifications/Makefile` provides `db-create` for
-creating its database once on the existing local PostgreSQL container.
-
-## Existing databases: baseline once
-
-Previously, Compose initialization scripts or Make/psql applied SQL without tracking
-versions. Compose no longer mounts those initialization scripts; startup owns them.
-Existing volumes/data are preserved, but an untracked schema will fail on startup
-because its tables already exist. There is no automatic baseline or reset.
-
-Before starting the new binaries, inspect the schema and confirm exactly which
-migration files have already been fully applied. Back up any data you need. Then
-record that version using the relevant service's Makefile, for example:
+From either service directory:
 
 ```bash
-# API: ONLY if migrations 001, 002, and 003 are already fully applied:
-make -C api db-force VERSION=3
-
-# Notifications: ONLY if its 001 migration is already fully applied:
-make -C notifications db-force VERSION=1
+make db-up       # pending migrations; also happens automatically on startup
+make db-down     # roll back ALL versions, deleting application data
 ```
 
-These examples use each Makefile's local database URL; supply the correct
-`DATABASE_URL` for the target environment. Force records a version without running
-SQL. Never use it on an empty database or to conceal an unresolved migration failure.
-An earlier schema must be baselined at its actual applied version instead.
+Override `DATABASE_URL` for other connection details. API migration 002 still seeds
+the demo household (`Casita`) and list (`Compras`); it does not create accounts.
+
+## Required reset for the single-user-identity refactor
+
+This pre-production refactor rewrites API migrations 001 and 003 in place. The old
+`members` table is removed; users now have a required name and household. An old
+version-3 database is incompatible even though the migration version is unchanged.
+**Reset existing databases before running the updated app.** Do not use `db-force`
+to claim the old schema matches the new one. The rewritten down migrations also
+expect the new schema; use the schema reset below for an old installation.
+
+Reset both service databases together: stored notification subscriptions reference
+user UUIDs from the API database, and recreated users receive new UUIDs. This deletes
+accounts, sessions, lists, items, activity, events, and stored device subscriptions.
+It leaves the PostgreSQL instance and other databases intact.
+
+1. Stop the API, notification service, and UI so nothing writes during the reset.
+   For Compose, use `docker compose stop api notifications ui`.
+2. Set `API_DATABASE_URL` and `NOTIFICATIONS_DATABASE_URL` to the intended databases,
+   using connection addresses reachable from the host. Verify their database names
+   differ. Run these commands as a role that owns the schemas/objects:
+
+   ```bash
+   psql "$API_DATABASE_URL" -v ON_ERROR_STOP=1 -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
+   psql "$NOTIFICATIONS_DATABASE_URL" -v ON_ERROR_STOP=1 -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
+   make -C api db-up DATABASE_URL="$API_DATABASE_URL"
+   make -C notifications db-up DATABASE_URL="$NOTIFICATIONS_DATABASE_URL"
+   ```
+
+3. Recreate each account, prompting for its password:
+
+   ```bash
+   go -C api run ./cmd/create-user -database-url "$API_DATABASE_URL" -email 'you@example.com' -name 'Your name'
+   ```
+
+   The command defaults to the seeded household. Supply `-household-id UUID` for
+   another existing household. Each account is a single row in `users`; there is
+   no separate membership or membership ID.
+4. Rebuild and restart all three application services with the updated code
+   (`docker compose up -d --build api notifications ui` for Compose).
+5. Fully close and reopen the PWA/browser, sign in again, and open a list or profile.
+   Old sessions are invalid. An existing browser push subscription with granted
+   permission is automatically registered to the new user ID. Enable notifications
+   in profile settings if the device has no subscription. Keep existing VAPID keys
+   during the reset so installed devices can reuse their browser subscriptions.
+
+No migration from old records or legacy URL aliases is provided. API resources
+now use `/me`, `/lists`, `/calendar`, and `/notifications/subscribe`; browser routes
+use `/lists`, `/lists/:listId`, `/calendar`, and `/profile`.
 
 ## Deployment and recovery
 
 Fresh databases migrate on first startup. Existing versioned databases apply only
 pending files; concurrent runners use PostgreSQL advisory locking. Lock waits are
-bounded, so a competing startup may fail and need restarting after the runner finishes.
+bounded, so a competing startup may need restarting after the runner finishes.
 
 A migration failure marks the database dirty and stops startup. Inspect and repair
-the database before explicitly forcing the verified version. Do not automatically
-force or run down migrations on failure. Treat applied migration files as immutable;
-add numbered up/down pairs for future changes.
+the database before explicitly forcing its verified version. Force records a version
+without executing SQL. Never automatically force or roll back on startup failure.
+The single-user reset above is an explicit pre-production exception to immutable
+migrations. For future changes, add numbered up/down pairs and use compatible changes
+while older application versions may still run.
 
-Startup migrations also run in production. Use backward-compatible changes while
-older application versions may still be running. The API image includes
-`/app/migrate` for explicit administration, with `-action up`, `-action down`, or
-`-action force -version N`, using `DATABASE_URL` from the environment.
+The API image includes `/app/migrate`, supporting `-action up`, `-action down`, and
+`-action force -version N`, using the environment's `DATABASE_URL`.
 
-The API's existing demo seed remains migration 002 and therefore still runs on fresh
-databases; this change does not alter its contents or move seed data to a separate flow.
+## Validation
+
+Use disposable databases, apply migrations first, and set `TEST_DATABASE_URL` for
+each service's Go suite. The API route integration tests and migration lifecycle
+tests create and clean isolated schemas. The database transaction test expects the
+base API schema to have been migrated already.

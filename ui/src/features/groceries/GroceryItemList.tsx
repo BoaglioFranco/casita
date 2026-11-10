@@ -7,13 +7,12 @@ import type { GroceryItem } from './types';
 import { GroceryItemRow } from './GroceryItemRow';
 
 type GroceryItemListProps = {
-  householdId: string;
   listId: string;
   items: GroceryItem[];
 };
 
-export function GroceryItemList({ householdId, listId, items }: GroceryItemListProps) {
-  const deleteItem = useDeleteGroceryItem(householdId, listId);
+export function GroceryItemList({ listId, items }: GroceryItemListProps) {
+  const deleteItem = useDeleteGroceryItem(listId);
   const [openedItemId, setOpenedItemId] = useState<string | null>(null);
 
   useEffect(() => {

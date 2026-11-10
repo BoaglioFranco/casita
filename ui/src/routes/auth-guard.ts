@@ -1,12 +1,12 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { redirect } from '@tanstack/react-router';
-import { householdsQuery } from '../features/households/queries';
+import { currentUserQuery } from '../features/auth/queries';
 import { ApiError } from '../lib/api-client';
 
 export async function requireAuthentication(queryClient: QueryClient) {
   try {
-    const households = await queryClient.fetchQuery(householdsQuery());
-    return { households, householdId: households[0]?.id };
+    const user = await queryClient.fetchQuery(currentUserQuery());
+    return { user };
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) {
       throw redirect({ to: '/login' });

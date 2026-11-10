@@ -9,7 +9,6 @@ import (
 	"github.com/BoaglioFranco/groceriesList/api/internal/auth"
 	"github.com/BoaglioFranco/groceriesList/api/internal/calendar"
 	"github.com/BoaglioFranco/groceriesList/api/internal/database"
-	"github.com/BoaglioFranco/groceriesList/api/internal/households"
 	"github.com/BoaglioFranco/groceriesList/api/internal/items"
 	"github.com/BoaglioFranco/groceriesList/api/internal/lists"
 	"github.com/BoaglioFranco/groceriesList/api/internal/notifications"
@@ -54,27 +53,7 @@ func main() {
 		log.Fatalf("failed to migrate database: %v", err)
 	}
 
-	authService := auth.NewAuthService(db)
-	notificationsService := notifications.NewNotificationService(db, os.Getenv("NOTIFICATIONS_SERVICE_URL"))
-	listsService := lists.NewListService(db)
-	itemsService := items.NewItemService(db, notificationsService)
-	householdService := households.NewHouseholdService(db)
-	calendarService := calendar.NewCalendarService(db)
-
-	authService.SetupAuthRoutes(router)
-	notificationsService.SetupPublicNotificationRoutes(router)
-
-	authenticatedRoutes := router.Group("/")
-	authenticatedRoutes.Use(authService.RequireAuth)
-	householdService.SetupRootHouseholdsRoutes(authenticatedRoutes)
-
-	householdRoutes := authenticatedRoutes.Group("/households/:householdId")
-	householdRoutes.Use(householdService.RequireMembership)
-	householdService.SetupHouseholdRoutes(householdRoutes)
-	listsService.SetupListRoutes(householdRoutes)
-	itemsService.SetupItemRoutes(householdRoutes)
-	notificationsService.SetupNotificationRoutes(householdRoutes)
-	calendarService.SetupCalendarRoutes(householdRoutes)
+	setupRoutes(router, db, os.Getenv("NOTIFICATIONS_SERVICE_URL"))
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -82,4 +61,24 @@ func main() {
 	}
 
 	router.Run(":" + port)
+}
+
+// setupRoutes is shared by production startup and HTTP integration tests.
+func setupRoutes(router gin.IRouter, db *database.Database, notificationServerURL string) {
+	authService := auth.NewAuthService(db)
+	notificationsService := notifications.NewNotificationService(db, notificationServerURL)
+	listsService := lists.NewListService(db)
+	itemsService := items.NewItemService(db, notificationsService)
+	calendarService := calendar.NewCalendarService(db)
+
+	authService.SetupAuthRoutes(router)
+	notificationsService.SetupPublicNotificationRoutes(router)
+
+	authenticatedRoutes := router.Group("/")
+	authenticatedRoutes.Use(authService.RequireAuth)
+	authService.SetupCurrentUserRoutes(authenticatedRoutes)
+	listsService.SetupListRoutes(authenticatedRoutes)
+	itemsService.SetupItemRoutes(authenticatedRoutes)
+	notificationsService.SetupNotificationRoutes(authenticatedRoutes)
+	calendarService.SetupCalendarRoutes(authenticatedRoutes)
 }

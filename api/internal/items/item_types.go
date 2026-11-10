@@ -35,14 +35,14 @@ type ItemCreator struct {
 }
 
 type itemRow struct {
-	ID                  uuid.UUID     `db:"id"`
-	ListID              uuid.UUID     `db:"list_id"`
-	Name                string        `db:"name"`
-	Description         *string       `db:"description"`
-	CreatedByMemberID   uuid.NullUUID `db:"created_by_member_id"`
-	CreatedByMemberName *string       `db:"created_by_member_name"`
-	CreatedAt           time.Time     `db:"created_at"`
-	UpdatedAt           time.Time     `db:"updated_at"`
+	ID                uuid.UUID     `db:"id"`
+	ListID            uuid.UUID     `db:"list_id"`
+	Name              string        `db:"name"`
+	Description       *string       `db:"description"`
+	CreatedByUserID   uuid.NullUUID `db:"created_by_user_id"`
+	CreatedByUserName *string       `db:"created_by_user_name"`
+	CreatedAt         time.Time     `db:"created_at"`
+	UpdatedAt         time.Time     `db:"updated_at"`
 }
 
 // Handlers
@@ -53,24 +53,25 @@ type CreateItemPayload struct {
 }
 
 type CreateItemParams struct {
-	HouseholdID   uuid.UUID
-	ListID        uuid.UUID
-	ActorMemberID uuid.UUID
-	Name          string
-	Description   *string
+	HouseholdID uuid.UUID
+	ListID      uuid.UUID
+	ActorUserID uuid.UUID
+	Name        string
+	Description *string
 }
 
 type DeleteItemParams struct {
-	HouseholdID   uuid.UUID
-	ListID        uuid.UUID
-	ItemID        uuid.UUID
-	ActorMemberID uuid.UUID
+	HouseholdID uuid.UUID
+	ListID      uuid.UUID
+	ItemID      uuid.UUID
+	ActorUserID uuid.UUID
 }
 
 // Store
 type InsertItemParams struct {
-	ListID            uuid.UUID
-	Name              string
-	Description       *string
-	CreatedByMemberID uuid.UUID
+	HouseholdID     uuid.UUID
+	ListID          uuid.UUID
+	Name            string
+	Description     *string
+	CreatedByUserID uuid.UUID
 }

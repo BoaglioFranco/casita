@@ -9,27 +9,22 @@ import {
   UnstyledButton,
   useMantineTheme,
 } from '@mantine/core';
-import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { ChevronDown, House, Settings, UsersRound } from 'lucide-react';
-import { currentMemberQuery } from '../../features/households/queries';
+import type { CurrentUser } from '../../features/auth/api';
 import { FeatureNavigation } from './FeatureNavigation';
 
 export function AppHeader({
   showAccountMenu = true,
-  householdId,
+  user,
 }: {
   showAccountMenu?: boolean;
-  householdId?: string;
+  user?: CurrentUser;
 }) {
   const theme = useMantineTheme();
   const primaryColor = theme.colors[theme.primaryColor][6];
-  const memberQuery = useQuery({
-    ...currentMemberQuery(householdId ?? ''),
-    enabled: showAccountMenu && Boolean(householdId),
-  });
-  const memberName = memberQuery.data?.name ?? 'Account';
-  const memberInitial = memberName.charAt(0).toUpperCase();
+  const userName = user?.name ?? 'Account';
+  const userInitial = userName.charAt(0).toUpperCase();
 
   return (
     <AppShell.Header bg={primaryColor} withBorder={false}>
@@ -52,10 +47,10 @@ export function AppHeader({
                   color="white"
                   h={48}
                   px="xs"
-                  aria-label={`Open menu for ${memberName}`}
+                  aria-label={`Open menu for ${userName}`}
                   leftSection={
                     <Avatar
-                      name={memberInitial}
+                      name={userInitial}
                       color="initials"
                       allowedInitialsColors={['orange', 'teal', 'lime', 'pink', 'yellow']}
                       variant="filled"
@@ -66,14 +61,14 @@ export function AppHeader({
                   }
                   rightSection={<ChevronDown size={16} />}
                 >
-                  {memberName}
+                  {userName}
                 </Button>
               </Menu.Target>
 
               <Menu.Dropdown>
                 <Menu.Label>Account</Menu.Label>
                 <Menu.Item
-                  renderRoot={(props) => <Link {...props} to="/profile" search={{ householdId }} />}
+                  renderRoot={(props) => <Link {...props} to="/profile" />}
                   leftSection={<Settings size={16} />}
                 >
                   Profile settings
@@ -86,14 +81,14 @@ export function AppHeader({
           )}
         </Group>
       </Container>
-      {showAccountMenu && householdId && (
+      {showAccountMenu && user && (
         <div
           style={{
             background: 'var(--mantine-color-body)',
             borderBottom: '1px solid var(--mantine-color-default-border)',
           }}
         >
-          <FeatureNavigation householdId={householdId} />
+          <FeatureNavigation />
         </div>
       )}
     </AppShell.Header>

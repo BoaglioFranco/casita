@@ -3,10 +3,10 @@ import { Link, useRouterState } from '@tanstack/react-router';
 import { CalendarDays, ListChecks } from 'lucide-react';
 import classes from './FeatureNavigation.module.css';
 
-export function FeatureNavigation({ householdId }: { householdId: string }) {
+export function FeatureNavigation() {
   const path = useRouterState({ select: (state) => state.location.pathname });
-  const calendarActive = path === `/${householdId}/calendar`;
-  const listsActive = path.startsWith(`/${householdId}/lists`);
+  const calendarActive = path === '/calendar';
+  const listsActive = path.startsWith('/lists');
 
   return (
     <Container
@@ -19,7 +19,7 @@ export function FeatureNavigation({ householdId }: { householdId: string }) {
       <Group gap="lg" h="100%">
         <UnstyledButton
           renderRoot={(props) => (
-            <Link {...props} to="/$householdId/lists" params={{ householdId }} />
+            <Link {...props} to="/lists" />
           )}
           className={classes.link}
           data-active={listsActive || undefined}
@@ -29,7 +29,7 @@ export function FeatureNavigation({ householdId }: { householdId: string }) {
         </UnstyledButton>
         <UnstyledButton
           renderRoot={(props) => (
-            <Link {...props} to="/$householdId/calendar" params={{ householdId }} />
+            <Link {...props} to="/calendar" />
           )}
           className={classes.link}
           data-active={calendarActive || undefined}

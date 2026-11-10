@@ -14,6 +14,7 @@ import {
 } from '@mantine/core';
 import { LockKeyhole, LogIn, Mail } from 'lucide-react';
 import { login } from './api';
+import { resetSubscriptionSyncs } from '../notifications/api';
 import { getErrorMessage } from '../../lib/api-client';
 
 export function LoginPage() {
@@ -26,6 +27,7 @@ export function LoginPage() {
     onSuccess: async () => {
       setPassword('');
       client.clear();
+      resetSubscriptionSyncs();
       await navigate({ to: '/' });
     },
   });

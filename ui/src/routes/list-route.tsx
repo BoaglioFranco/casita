@@ -7,27 +7,18 @@ import { rootRoute } from './root-route';
 
 export const listRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/$householdId/lists/$listId',
-  beforeLoad: async ({ context, params }) => {
-    const { households } = await requireAuthentication(context.queryClient);
-    if (!households.some((household) => household.id === params.householdId)) {
-      throw notFound();
-    }
-    return { householdId: params.householdId };
-  },
+  path: '/lists/$listId',
+  beforeLoad: ({ context }) => requireAuthentication(context.queryClient),
   loader: async ({ context, params }) => {
-    const lists = await context.queryClient.fetchQuery(listsQuery(params.householdId));
+    const lists = await context.queryClient.fetchQuery(listsQuery(context.user.id));
     const list = lists.find((candidate) => candidate.id === params.listId);
     if (!list) throw notFound();
-
-    await context.queryClient.ensureQueryData(
-      groceryItemsQuery(params.householdId, params.listId),
-    );
+    await context.queryClient.ensureQueryData(groceryItemsQuery(context.user.id, params.listId));
     return { list };
   },
   component: () => {
-    const { householdId, listId } = listRoute.useParams();
+    const { listId } = listRoute.useParams();
     const { list } = listRoute.useLoaderData();
-    return <GroceryPage householdId={householdId} listId={listId} list={list} />;
+    return <GroceryPage listId={listId} list={list} />;
   },
 });

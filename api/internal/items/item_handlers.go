@@ -4,14 +4,14 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/BoaglioFranco/groceriesList/api/internal/households"
+	"github.com/BoaglioFranco/groceriesList/api/internal/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 func (service *ItemService) createItemHandler(c *gin.Context) {
-	memberId := households.MemberIDFromContext(c)
-	householdID := households.HouseholdIDFromContext(c)
+	userID := auth.UserIDFromContext(c)
+	householdID := auth.HouseholdIDFromContext(c)
 	params := &CreateItemPayload{}
 
 	listID, err := uuid.Parse(c.Param("listId"))
@@ -26,12 +26,16 @@ func (service *ItemService) createItemHandler(c *gin.Context) {
 	}
 
 	err = service.CreateItem(c.Request.Context(), CreateItemParams{
-		HouseholdID:   householdID,
-		ListID:        listID,
-		ActorMemberID: memberId,
-		Name:          params.Name,
-		Description:   params.Description,
+		HouseholdID: householdID,
+		ListID:      listID,
+		ActorUserID: userID,
+		Name:        params.Name,
+		Description: params.Description,
 	})
+	if errors.Is(err, ErrItemNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Item or list not found"})
+		return
+	}
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -41,8 +45,8 @@ func (service *ItemService) createItemHandler(c *gin.Context) {
 }
 
 func (service *ItemService) removeItemHandler(c *gin.Context) {
-	memberID := households.MemberIDFromContext(c)
-	householdID := households.HouseholdIDFromContext(c)
+	userID := auth.UserIDFromContext(c)
+	householdID := auth.HouseholdIDFromContext(c)
 
 	listID, err := uuid.Parse(c.Param("listId"))
 	if err != nil {
@@ -55,10 +59,10 @@ func (service *ItemService) removeItemHandler(c *gin.Context) {
 		return
 	}
 	err = service.DeleteItem(c.Request.Context(), DeleteItemParams{
-		HouseholdID:   householdID,
-		ListID:        listID,
-		ItemID:        itemID,
-		ActorMemberID: memberID,
+		HouseholdID: householdID,
+		ListID:      listID,
+		ItemID:      itemID,
+		ActorUserID: userID,
 	})
 	if err != nil {
 		if errors.Is(err, ErrItemNotFound) {
@@ -79,7 +83,11 @@ func (service *ItemService) getItemsHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid list id"})
 		return
 	}
-	items, err := service.itemStore.GetItemsFromList(c.Request.Context(), listID)
+	items, err := service.itemStore.GetItemsFromList(c.Request.Context(), auth.HouseholdIDFromContext(c), listID)
+	if errors.Is(err, ErrItemNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Item or list not found"})
+		return
+	}
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

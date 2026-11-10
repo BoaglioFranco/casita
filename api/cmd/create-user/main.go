@@ -23,7 +23,7 @@ func main() {
 	}
 
 	email := flag.String("email", "", "user email")
-	name := flag.String("name", "", "household member name")
+	name := flag.String("name", "", "user display name")
 	householdID := flag.String("household-id", demoHouseholdID, "household UUID")
 	flag.StringVar(&databaseURL, "database-url", databaseURL, "PostgreSQL connection URL")
 	flag.Parse()
@@ -65,31 +65,10 @@ func main() {
 	defer db.Close()
 
 	var userID uuid.UUID
-	err = db.WithTx(ctx, func(tx database.Executor) error {
-		err := tx.GetContext(
-			ctx,
-			&userID,
-			`INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id`,
-			*email,
-			string(passwordHash),
-		)
-		if err != nil {
-			return fmt.Errorf("insert user: %w", err)
-		}
-
-		_, err = tx.ExecContext(
-			ctx,
-			`INSERT INTO members (household_id, user_id, name) VALUES ($1, $2, $3)`,
-			householdUUID,
-			userID,
-			*name,
-		)
-		if err != nil {
-			return fmt.Errorf("insert household member: %w", err)
-		}
-
-		return nil
-	})
+	err = db.GetContext(ctx, &userID,
+		`INSERT INTO users (email, password_hash, name, household_id) VALUES ($1, $2, $3, $4) RETURNING id`,
+		*email, string(passwordHash), *name, householdUUID,
+	)
 	if err != nil {
 		log.Fatalf("create user: %v", err)
 	}

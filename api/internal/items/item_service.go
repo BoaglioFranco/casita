@@ -22,10 +22,11 @@ func NewItemService(db *database.Database, notificationService *notifications.No
 func (service *ItemService) CreateItem(ctx context.Context, params CreateItemParams) error {
 	err := service.db.WithTx(ctx, func(tx database.Executor) error {
 		itemID, err := service.itemStore.InsertItemTx(ctx, tx, InsertItemParams{
-			ListID:            params.ListID,
-			Name:              params.Name,
-			Description:       params.Description,
-			CreatedByMemberID: params.ActorMemberID,
+			ListID:          params.ListID,
+			HouseholdID:     params.HouseholdID,
+			Name:            params.Name,
+			Description:     params.Description,
+			CreatedByUserID: params.ActorUserID,
 		})
 		if err != nil {
 			return err
@@ -33,7 +34,7 @@ func (service *ItemService) CreateItem(ctx context.Context, params CreateItemPar
 
 		return service.activityStore.RecordActivityTx(ctx, tx, activity.RecordActivityParams{
 			EventType:        activity.ActivityItemCreate,
-			ActorMemberID:    &params.ActorMemberID,
+			ActorUserID:      &params.ActorUserID,
 			ListID:           &params.ListID,
 			HouseholdID:      params.HouseholdID,
 			ItemID:           &itemID,
@@ -44,7 +45,7 @@ func (service *ItemService) CreateItem(ctx context.Context, params CreateItemPar
 		return err
 	}
 
-	err = service.notificationService.NotifyOtherMembers(ctx, params.HouseholdID, params.ActorMemberID, notifications.Notification{
+	err = service.notificationService.NotifyOtherUsers(ctx, params.HouseholdID, params.ActorUserID, notifications.Notification{
 		Title: "Item created",
 		Body:  fmt.Sprintf("%s added to the list", params.Name),
 	})
@@ -58,23 +59,19 @@ func (service *ItemService) CreateItem(ctx context.Context, params CreateItemPar
 func (service *ItemService) DeleteItem(ctx context.Context, params DeleteItemParams) error {
 	var itemName string
 	err := service.db.WithTx(ctx, func(tx database.Executor) error {
-		item, err := service.itemStore.GetItemTx(ctx, tx, params.ItemID)
+		item, err := service.itemStore.GetItemTx(ctx, tx, params.HouseholdID, params.ListID, params.ItemID)
 		if err != nil {
 			return err
 		}
-
-		if item.ListID != params.ListID {
-			return ErrItemNotFound
-		}
 		itemName = item.Name
 
-		if err := service.itemStore.DeleteItemTx(ctx, tx, params.ItemID); err != nil {
+		if err := service.itemStore.DeleteItemTx(ctx, tx, params.HouseholdID, params.ListID, params.ItemID); err != nil {
 			return err
 		}
 
 		return service.activityStore.RecordActivityTx(ctx, tx, activity.RecordActivityParams{
 			EventType:        activity.ActivityItemDelete,
-			ActorMemberID:    &params.ActorMemberID,
+			ActorUserID:      &params.ActorUserID,
 			ListID:           &params.ListID,
 			HouseholdID:      params.HouseholdID,
 			ItemNameSnapshot: &item.Name,
@@ -84,7 +81,7 @@ func (service *ItemService) DeleteItem(ctx context.Context, params DeleteItemPar
 	if err != nil {
 		return err
 	}
-	err = service.notificationService.NotifyOtherMembers(ctx, params.HouseholdID, params.ActorMemberID, notifications.Notification{
+	err = service.notificationService.NotifyOtherUsers(ctx, params.HouseholdID, params.ActorUserID, notifications.Notification{
 		Title: "Item deleted",
 		Body:  fmt.Sprintf("%s removed from the list", itemName),
 	})

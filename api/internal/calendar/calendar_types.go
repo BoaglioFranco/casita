@@ -14,7 +14,7 @@ var ErrInvalidRecurrenceRule = errors.New("invalid recurrence rule")
 type CalendarEvent struct {
 	ID                        uuid.UUID  `db:"id" json:"id"`
 	HouseholdID               *uuid.UUID `db:"household_id" json:"householdId"`
-	CreatedByMemberID         *uuid.UUID `db:"created_by_member_id" json:"createdByMemberId"`
+	CreatedByUserID           *uuid.UUID `db:"created_by_user_id" json:"createdByUserId"`
 	Name                      string     `db:"name" json:"name"`
 	Description               *string    `db:"description" json:"description"`
 	StartsAt                  time.Time  `db:"starts_at" json:"startsAt"`
@@ -53,7 +53,7 @@ type CreateEventPayload struct {
 
 type CreateEventParams struct {
 	HouseholdID               uuid.UUID
-	CreatedByMemberID         uuid.UUID
+	CreatedByUserID           uuid.UUID
 	Name                      string
 	Description               *string
 	StartsAt                  time.Time
@@ -64,7 +64,7 @@ type CreateEventParams struct {
 
 type InsertEventParams struct {
 	HouseholdID               uuid.UUID
-	CreatedByMemberID         uuid.UUID
+	CreatedByUserID           uuid.UUID
 	Name                      string
 	Description               *string
 	StartsAt                  time.Time

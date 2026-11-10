@@ -21,14 +21,12 @@ import { reminderOptions, repeatOptions } from './event-options';
 import { useCreateEvent } from './queries';
 
 export function CreateEventModal({
-  householdId,
   opened,
   initialStart,
   onClose,
   onExited,
   onCreated,
 }: {
-  householdId: string;
   opened: boolean;
   initialStart: Date | null;
   onClose: () => void;
@@ -36,7 +34,7 @@ export function CreateEventModal({
   onCreated: (start: Date) => void;
 }) {
   const mobile = useMediaQuery('(max-width: 47.99em)');
-  const create = useCreateEvent(householdId);
+  const create = useCreateEvent();
   const [section, setSection] = useState<string | null>(null);
   const [pickerOpened, setPickerOpened] = useState(false);
   const [name, setName] = useState('');

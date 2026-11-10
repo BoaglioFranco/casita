@@ -18,13 +18,13 @@ func NewCalendarStore(db *database.Database) *CalendarStore {
 func (store *CalendarStore) InsertEvent(ctx context.Context, params InsertEventParams) error {
 	query := `
 		INSERT INTO calendar_events (
-		    household_id, created_by_member_id, name, description, starts_at,
+		    household_id, created_by_user_id, name, description, starts_at,
 		    duration_minutes, recurrence_rule, notification_offset_minutes
 		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
 
 	_, err := store.db.ExecContext(ctx, query,
 		params.HouseholdID,
-		params.CreatedByMemberID,
+		params.CreatedByUserID,
 		params.Name,
 		params.Description,
 		params.StartsAt.UTC(),

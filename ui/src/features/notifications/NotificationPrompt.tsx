@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Button, Modal, Stack, Text } from '@mantine/core';
 import { Bell } from 'lucide-react';
+import { useCurrentUser } from '../auth/queries';
 import { getErrorMessage } from '../../lib/api-client';
 import { isMobileDevice, isStandaloneApp } from './api';
 import { useEnableNotifications } from './hooks';
@@ -19,9 +20,10 @@ function wasPromptDismissed(): boolean {
   }
 }
 
-export function NotificationPrompt({ householdId }: { householdId: string }) {
-  const state = useQuery(notificationStateQuery(householdId));
-  const enable = useEnableNotifications(householdId);
+export function NotificationPrompt() {
+  const { id: userId } = useCurrentUser();
+  const state = useQuery(notificationStateQuery(userId));
+  const enable = useEnableNotifications();
   const [dismissed, setDismissed] = useState(wasPromptDismissed);
   const isNonInstalledMobileBrowser = isMobileDevice() && !isStandaloneApp();
   const shouldPrompt = state.data === 'disabled' && !isNonInstalledMobileBrowser;

@@ -14,6 +14,6 @@ type RecordActivityParams struct {
 	HouseholdID      uuid.UUID
 	ListID           *uuid.UUID
 	ItemID           *uuid.UUID
-	ActorMemberID    *uuid.UUID
+	ActorUserID      *uuid.UUID
 	ItemNameSnapshot *string
 }

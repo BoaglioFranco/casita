@@ -3,7 +3,7 @@ export type CalendarView = 'day' | 'three-days' | 'week';
 export type CalendarEvent = {
   id: string;
   householdId: string | null;
-  createdByMemberId: string | null;
+  createdByUserId: string | null;
   name: string;
   description: string | null;
   startsAt: string;

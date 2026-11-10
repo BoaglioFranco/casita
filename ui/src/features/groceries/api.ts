@@ -19,32 +19,30 @@ type RawGroceryItem = {
   UpdatedAt?: string;
 };
 
-function itemsPath(householdId: string, listId: string): string {
-  return `/households/${householdId}/lists/${listId}/items`;
+function itemsPath(listId: string): string {
+  return `/lists/${listId}/items`;
 }
 
-export async function getGroceryItems(householdId: string, listId: string): Promise<GroceryItem[]> {
-  const response = await apiRequest<GroceryItemsResponse>(itemsPath(householdId, listId));
+export async function getGroceryItems(listId: string): Promise<GroceryItem[]> {
+  const response = await apiRequest<GroceryItemsResponse>(itemsPath(listId));
   return normalizeItems(response.items);
 }
 
 export function createGroceryItem(
-  householdId: string,
   listId: string,
   input: CreateGroceryItemInput,
 ): Promise<void> {
-  return apiRequest(itemsPath(householdId, listId), {
+  return apiRequest(itemsPath(listId), {
     method: 'POST',
     body: JSON.stringify(input),
   });
 }
 
 export function deleteGroceryItem(
-  householdId: string,
   listId: string,
   itemId: string,
 ): Promise<void> {
-  return apiRequest(`${itemsPath(householdId, listId)}/${itemId}`, { method: 'DELETE' });
+  return apiRequest(`${itemsPath(listId)}/${itemId}`, { method: 'DELETE' });
 }
 
 function normalizeItems(data: unknown): GroceryItem[] {

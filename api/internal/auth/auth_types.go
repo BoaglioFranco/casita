@@ -30,16 +30,29 @@ type LoginPayload struct {
 type InsertUserParams struct {
 	Email          string
 	HashedPassword string
+	Name           string
+	HouseholdID    uuid.UUID
 }
 type User struct {
 	ID           uuid.UUID `db:"id"`
 	Email        string    `db:"email"`
+	Name         string    `db:"name"`
+	HouseholdID  uuid.UUID `db:"household_id"`
 	PasswordHash string    `db:"password_hash"`
 	CreatedAt    time.Time `db:"created_at"`
 }
 type Session struct {
-	TokenHash string    `db:"token_hash"`
-	UserID    uuid.UUID `db:"user_id"`
-	ExpiresAt time.Time `db:"expires_at"`
-	CreatedAt time.Time `db:"created_at"`
+	TokenHash   string    `db:"token_hash"`
+	UserID      uuid.UUID `db:"user_id"`
+	ExpiresAt   time.Time `db:"expires_at"`
+	CreatedAt   time.Time `db:"created_at"`
+	Name        string    `db:"name"`
+	HouseholdID uuid.UUID `db:"household_id"`
+}
+
+// CurrentUser is safe to return to clients; authentication credentials stay private.
+type CurrentUser struct {
+	ID          uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
+	HouseholdID uuid.UUID `json:"householdId"`
 }

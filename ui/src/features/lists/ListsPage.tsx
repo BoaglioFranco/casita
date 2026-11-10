@@ -2,12 +2,14 @@ import { Container, Group, Paper, SimpleGrid, Stack, Text, Title } from '@mantin
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { ChevronRight, ListChecks } from 'lucide-react';
+import { useCurrentUser } from '../auth/queries';
 import { ListIcon } from '../list-icons/ListIcon';
 import { listIconCatalog } from '../list-icons/icon-catalog';
 import { listsQuery } from './queries';
 
-export function ListsPage({ householdId }: { householdId: string }) {
-  const { data: lists } = useSuspenseQuery(listsQuery(householdId));
+export function ListsPage() {
+  const { id: userId } = useCurrentUser();
+  const { data: lists } = useSuspenseQuery(listsQuery(userId));
   return (
     <Container component="main" size="md" w="100%" py="xl" px="md">
       <Stack gap="lg">
@@ -29,8 +31,8 @@ export function ListsPage({ householdId }: { householdId: string }) {
                   renderRoot={(props) => (
                     <Link
                       {...props}
-                      to="/$householdId/lists/$listId"
-                      params={{ householdId, listId: list.id }}
+                      to="/lists/$listId"
+                      params={{ listId: list.id }}
                     />
                   )}
                   withBorder

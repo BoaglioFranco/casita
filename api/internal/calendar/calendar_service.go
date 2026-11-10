@@ -31,7 +31,7 @@ func (service *CalendarService) CreateEvent(ctx context.Context, params CreateEv
 
 	return service.calendarStore.InsertEvent(ctx, InsertEventParams{
 		HouseholdID:               params.HouseholdID,
-		CreatedByMemberID:         params.CreatedByMemberID,
+		CreatedByUserID:           params.CreatedByUserID,
 		Name:                      params.Name,
 		Description:               params.Description,
 		StartsAt:                  params.StartsAt,

@@ -4,14 +4,14 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/BoaglioFranco/groceriesList/api/internal/households"
+	"github.com/BoaglioFranco/groceriesList/api/internal/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 func (service *CalendarService) createEvent(c *gin.Context) {
-	householdID := households.HouseholdIDFromContext(c)
-	memberID := households.MemberIDFromContext(c)
+	householdID := auth.HouseholdIDFromContext(c)
+	userID := auth.UserIDFromContext(c)
 	params := &CreateEventPayload{}
 
 	err := c.ShouldBindJSON(params)
@@ -23,7 +23,7 @@ func (service *CalendarService) createEvent(c *gin.Context) {
 
 	err = service.CreateEvent(c.Request.Context(), CreateEventParams{
 		HouseholdID:               householdID,
-		CreatedByMemberID:         memberID,
+		CreatedByUserID:           userID,
 		Name:                      params.Name,
 		Description:               params.Description,
 		StartsAt:                  params.StartsAt,
@@ -44,7 +44,7 @@ func (service *CalendarService) createEvent(c *gin.Context) {
 }
 
 func (service *CalendarService) updateEvent(c *gin.Context) {
-	householdID := households.HouseholdIDFromContext(c)
+	householdID := auth.HouseholdIDFromContext(c)
 	params := &UpdateEventPayload{}
 
 	eventID, err := uuid.Parse(c.Param("eventId"))
@@ -85,7 +85,7 @@ func (service *CalendarService) updateEvent(c *gin.Context) {
 }
 
 func (service *CalendarService) deleteEvent(c *gin.Context) {
-	householdID := households.HouseholdIDFromContext(c)
+	householdID := auth.HouseholdIDFromContext(c)
 
 	eventID, err := uuid.Parse(c.Param("eventId"))
 	if err != nil {
@@ -110,7 +110,7 @@ func (service *CalendarService) deleteEvent(c *gin.Context) {
 }
 
 func (service *CalendarService) getCalendar(c *gin.Context) {
-	householdID := households.HouseholdIDFromContext(c)
+	householdID := auth.HouseholdIDFromContext(c)
 
 	var query GetCalendarQuery
 	if err := c.ShouldBindQuery(&query); err != nil {

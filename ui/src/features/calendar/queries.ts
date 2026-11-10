@@ -1,18 +1,19 @@
 import { infiniteQueryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useCurrentUser } from '../auth/queries';
 import { createEvent, getCalendar } from './api';
 import { adjacentWindow } from './calendar-utils';
 import type { CalendarWindow, CreateEventInput } from './types';
 
 export const calendarKeys = {
-  household: (householdId: string) => ['calendar', householdId] as const,
+  user: (userId: string) => ['calendar', userId] as const,
 };
 
-export function calendarQuery(householdId: string, window: CalendarWindow) {
+export function calendarQuery(userId: string, window: CalendarWindow) {
   return infiniteQueryOptions({
-    queryKey: [...calendarKeys.household(householdId), window.from, window.to],
+    queryKey: [...calendarKeys.user(userId), window.from, window.to],
     initialPageParam: window,
     queryFn: async ({ pageParam, signal }) => ({
-      ...(await getCalendar(householdId, pageParam, signal)),
+      ...(await getCalendar(pageParam, signal)),
       window: pageParam,
     }),
     getNextPageParam: (lastPage) => adjacentWindow(lastPage.window, 1),
@@ -22,14 +23,15 @@ export function calendarQuery(householdId: string, window: CalendarWindow) {
   });
 }
 
-export function useCreateEvent(householdId: string) {
+export function useCreateEvent() {
+  const { id: userId } = useCurrentUser();
   const client = useQueryClient();
   return useMutation({
-    mutationFn: (input: CreateEventInput) => createEvent(householdId, input),
+    mutationFn: (input: CreateEventInput) => createEvent(input),
     onSuccess: () => {
       // A successful POST has no response body. Refetch the server-expanded timeline.
       void client.invalidateQueries({
-        queryKey: calendarKeys.household(householdId),
+        queryKey: calendarKeys.user(userId),
       });
     },
   });

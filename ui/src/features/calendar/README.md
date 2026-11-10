@@ -1,20 +1,21 @@
 # Calendar UI
 
-Calendar is a household feature at `/$householdId/calendar`. It does not depend on
-a list. The main navigation also exposes a lists overview at `/$householdId/lists`.
-Both routes check household membership through the existing authentication guard.
+Calendar is a household feature at `/calendar`. It does not depend on
+a list. The main navigation also exposes a lists overview at `/lists`.
+Both routes use `/me` through the authentication guard. The API derives the
+household from the authenticated user; calendar caches are partitioned by user ID.
 
 ## API contract
 
-- `GET /households/:householdId/calendar?from=YYYY-MM-DD&to=YYYY-MM-DD` returns
+- `GET /calendar?from=YYYY-MM-DD&to=YYYY-MM-DD` returns
   `{ from, to, occurrences }`. The backend interprets date-only boundaries in its
   local timezone and returns timestamp boundaries. Both endpoints are inclusive.
 - Each occurrence has its own `startsAt` and `endsAt`, plus the underlying event.
   A recurring event's `event.startsAt` is the series anchor, not necessarily the
   start displayed in the current week. Expansion stays on the server.
-- `POST /households/:householdId/calendar/events` accepts `name`, `description`,
+- `POST /calendar/events` accepts `name`, `description`,
   `startsAt`, `durationMinutes`, `notificationOffsetMinutes`, and `recurrenceRule`.
-  Success is an empty `201`; the UI invalidates the household's calendar queries.
+  Success is an empty `201`; the UI invalidates the current user's calendar queries.
 - Local date/time inputs are converted to an ISO timestamp for writes. Occurrences
   are displayed in the viewer's timezone. Recurrence follows the backend's UTC
   rules and does not adjust for daylight saving changes.

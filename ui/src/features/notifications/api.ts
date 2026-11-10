@@ -4,6 +4,11 @@ type VapidKeyResponse = { publicKey?: string };
 
 const existingSubscriptionSyncs = new Map<string, Promise<void>>();
 
+// A shared device endpoint can be reassigned when a different account signs in.
+export function resetSubscriptionSyncs() {
+  existingSubscriptionSyncs.clear();
+}
+
 export type NotificationState =
   | 'disabled'
   | 'enabled'
@@ -34,7 +39,7 @@ function isIosDevice(): boolean {
   );
 }
 
-export async function getNotificationState(householdId: string): Promise<NotificationState> {
+export async function getNotificationState(userId: string): Promise<NotificationState> {
   if (isIosDevice() && !isStandaloneApp()) return 'install-required';
 
   if (
@@ -52,11 +57,11 @@ export async function getNotificationState(householdId: string): Promise<Notific
   const subscription = await registration?.pushManager.getSubscription();
   if (subscription == null) return 'disabled';
 
-  await syncExistingSubscriptionOnce(householdId, subscription);
+  await syncExistingSubscriptionOnce(userId, subscription);
   return 'enabled';
 }
 
-export async function enableNotifications(householdId: string): Promise<void> {
+export async function enableNotifications(userId: string): Promise<void> {
   if (!('serviceWorker' in navigator)) {
     throw new Error('This browser does not support service workers.');
   }
@@ -81,23 +86,26 @@ export async function enableNotifications(householdId: string): Promise<void> {
       applicationServerKey: urlBase64ToUint8Array(publicKey),
     }));
 
-  await syncExistingSubscriptionOnce(householdId, subscription);
+  await syncExistingSubscriptionOnce(userId, subscription);
 }
 
 function syncExistingSubscriptionOnce(
-  householdId: string,
+  userId: string,
   subscription: PushSubscription,
 ): Promise<void> {
-  const existingSync = existingSubscriptionSyncs.get(householdId);
+  const existingSync = existingSubscriptionSyncs.get(userId);
   if (existingSync) return existingSync;
 
-  const sync = storeSubscription(householdId, subscription);
-  existingSubscriptionSyncs.set(householdId, sync);
+  const sync = storeSubscription(subscription).catch((error) => {
+    existingSubscriptionSyncs.delete(userId);
+    throw error;
+  });
+  existingSubscriptionSyncs.set(userId, sync);
   return sync;
 }
 
-function storeSubscription(householdId: string, subscription: PushSubscription): Promise<void> {
-  return apiRequest(`/households/${householdId}/notifications/subscribe`, {
+function storeSubscription(subscription: PushSubscription): Promise<void> {
+  return apiRequest('/notifications/subscribe', {
     method: 'POST',
     body: JSON.stringify(subscription),
   });

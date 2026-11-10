@@ -3,13 +3,13 @@ package lists
 import (
 	"net/http"
 
-	"github.com/BoaglioFranco/groceriesList/api/internal/households"
+	"github.com/BoaglioFranco/groceriesList/api/internal/auth"
 	"github.com/gin-gonic/gin"
 )
 
 func (service *ListService) createListHandler(c *gin.Context) {
 	params := &CreateListPayload{}
-	householdID := households.HouseholdIDFromContext(c)
+	householdID := auth.HouseholdIDFromContext(c)
 
 	err := c.ShouldBindJSON(params)
 	if err != nil {
@@ -26,7 +26,7 @@ func (service *ListService) createListHandler(c *gin.Context) {
 }
 
 func (service *ListService) getListsHandler(c *gin.Context) {
-	householdID := households.HouseholdIDFromContext(c)
+	householdID := auth.HouseholdIDFromContext(c)
 
 	lists, err := service.listStore.GetLists(c.Request.Context(), householdID)
 	if err != nil {

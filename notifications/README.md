@@ -19,7 +19,8 @@ Identity headers or body fields do not establish identity. Invalid requests retu
 Both services must load the same `S2S_TOKEN` into their environment. The notification
 service refuses startup if it is missing or shorter than 32 bytes. `.env` files are
 not automatically loaded by `go run`; export them or use your development runner.
-The main backend's token issuance/forwarding is not implemented yet.
+The main backend forwards subscription requests with the authenticated user's UUID.
+It also resolves immediate list-change recipients by canonical user ID.
 
 ## Compose configuration
 

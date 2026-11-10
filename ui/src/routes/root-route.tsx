@@ -1,3 +1,4 @@
+import type { CurrentUser } from '../features/auth/api';
 import type { QueryClient } from '@tanstack/react-query';
 import { createRootRouteWithContext, Outlet, useRouterState } from '@tanstack/react-router';
 import {
@@ -14,26 +15,26 @@ import {
 import { getErrorMessage } from '../lib/api-client';
 import { AppHeader } from '../components/layout/AppHeader';
 
-export type RouterContext = { queryClient: QueryClient; householdId?: string };
+export type RouterContext = { queryClient: QueryClient; user?: CurrentUser };
 
 function RootLayout() {
   const showAccountMenu = useRouterState({
     select: (state) => state.location.pathname !== '/login',
   });
-  const householdId = useRouterState({
-    select: (state) => state.matches[state.matches.length - 1]?.context.householdId,
+  const user = useRouterState({
+    select: (state) => state.matches[state.matches.length - 1]?.context.user,
   });
 
   return (
     <AppShell
       header={{
         height: {
-          base: householdId && showAccountMenu ? 120 : 72,
-          sm: householdId && showAccountMenu ? 128 : 80,
+          base: user && showAccountMenu ? 120 : 72,
+          sm: user && showAccountMenu ? 128 : 80,
         },
       }}
     >
-      <AppHeader showAccountMenu={showAccountMenu} householdId={householdId} />
+      <AppHeader showAccountMenu={showAccountMenu} user={user} />
       <AppShell.Main display="flex">
         <Outlet />
       </AppShell.Main>

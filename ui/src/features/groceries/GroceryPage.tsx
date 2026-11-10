@@ -12,6 +12,7 @@ import {
   Tooltip,
 } from '@mantine/core';
 import { RefreshCcw } from 'lucide-react';
+import { useCurrentUser } from '../auth/queries';
 import { ListIcon } from '../list-icons/ListIcon';
 import { listIconCatalog } from '../list-icons/icon-catalog';
 import type { HouseholdList } from '../lists/types';
@@ -21,18 +22,18 @@ import { GroceryItemList } from './GroceryItemList';
 import { groceryItemsQuery } from './queries';
 
 type GroceryPageProps = {
-  householdId: string;
   listId: string;
   list: HouseholdList;
 };
 
-export function GroceryPage({ householdId, listId, list }: GroceryPageProps) {
-  const itemsQuery = useSuspenseQuery(groceryItemsQuery(householdId, listId));
+export function GroceryPage({ listId, list }: GroceryPageProps) {
+  const { id: userId } = useCurrentUser();
+  const itemsQuery = useSuspenseQuery(groceryItemsQuery(userId, listId));
   const icon = listIconCatalog.find((candidate) => candidate.id === list.icon);
 
   return (
     <Box component="main" flex={1} w="100%">
-      <NotificationPrompt householdId={householdId} />
+      <NotificationPrompt />
       <Container size="md" px="md" py="md">
         <Stack gap="md">
           <Group justify="space-between" align="center" gap="md" wrap="nowrap">
@@ -65,9 +66,9 @@ export function GroceryPage({ householdId, listId, list }: GroceryPageProps) {
 
           <Paper withBorder p="md" radius="sm">
             <Stack gap="md">
-              <GroceryItemForm householdId={householdId} listId={listId} />
+              <GroceryItemForm listId={listId} />
               <Divider />
-              <GroceryItemList householdId={householdId} listId={listId} items={itemsQuery.data} />
+              <GroceryItemList listId={listId} items={itemsQuery.data} />
             </Stack>
           </Paper>
 
