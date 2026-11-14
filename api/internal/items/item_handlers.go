@@ -4,14 +4,13 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/BoaglioFranco/groceriesList/api/internal/auth"
+	"github.com/BoaglioFranco/casita/api/internal/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 func (service *ItemService) createItemHandler(c *gin.Context) {
-	userID := auth.UserIDFromContext(c)
-	householdID := auth.HouseholdIDFromContext(c)
+	user := auth.CurrentUserFromContext(c)
 	params := &CreateItemPayload{}
 
 	listID, err := uuid.Parse(c.Param("listId"))
@@ -26,9 +25,8 @@ func (service *ItemService) createItemHandler(c *gin.Context) {
 	}
 
 	err = service.CreateItem(c.Request.Context(), CreateItemParams{
-		HouseholdID: householdID,
+		User:        user,
 		ListID:      listID,
-		ActorUserID: userID,
 		Name:        params.Name,
 		Description: params.Description,
 	})
@@ -45,8 +43,7 @@ func (service *ItemService) createItemHandler(c *gin.Context) {
 }
 
 func (service *ItemService) removeItemHandler(c *gin.Context) {
-	userID := auth.UserIDFromContext(c)
-	householdID := auth.HouseholdIDFromContext(c)
+	user := auth.CurrentUserFromContext(c)
 
 	listID, err := uuid.Parse(c.Param("listId"))
 	if err != nil {
@@ -59,10 +56,9 @@ func (service *ItemService) removeItemHandler(c *gin.Context) {
 		return
 	}
 	err = service.DeleteItem(c.Request.Context(), DeleteItemParams{
-		HouseholdID: householdID,
-		ListID:      listID,
-		ItemID:      itemID,
-		ActorUserID: userID,
+		User:   user,
+		ListID: listID,
+		ItemID: itemID,
 	})
 	if err != nil {
 		if errors.Is(err, ErrItemNotFound) {

@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/BoaglioFranco/groceriesList/api/internal/auth"
-	"github.com/BoaglioFranco/groceriesList/api/internal/calendar"
-	"github.com/BoaglioFranco/groceriesList/api/internal/database"
-	"github.com/BoaglioFranco/groceriesList/api/internal/items"
-	"github.com/BoaglioFranco/groceriesList/api/internal/lists"
-	"github.com/BoaglioFranco/groceriesList/api/internal/notifications"
-	"github.com/BoaglioFranco/groceriesList/api/migrations"
+	"github.com/BoaglioFranco/casita/api/internal/auth"
+	"github.com/BoaglioFranco/casita/api/internal/calendar"
+	"github.com/BoaglioFranco/casita/api/internal/database"
+	"github.com/BoaglioFranco/casita/api/internal/items"
+	"github.com/BoaglioFranco/casita/api/internal/lists"
+	"github.com/BoaglioFranco/casita/api/internal/notifications"
+	"github.com/BoaglioFranco/casita/api/migrations"
 	"github.com/gin-gonic/gin"
 )
 

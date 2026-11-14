@@ -6,8 +6,8 @@ import (
 	"slices"
 	"time"
 
-	"github.com/BoaglioFranco/groceriesList/api/internal/database"
-	"github.com/BoaglioFranco/groceriesList/api/internal/utils"
+	"github.com/BoaglioFranco/casita/api/internal/database"
+	"github.com/BoaglioFranco/casita/api/internal/utils"
 	"github.com/teambition/rrule-go"
 )
 

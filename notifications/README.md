@@ -7,7 +7,7 @@ backend signs the JWT with HS256 using the shared `S2S_TOKEN`; it derives the us
 ID from the authenticated session. The token must contain:
 
 - `sub`: a nonzero user UUID.
-- `iss`: `groceries-api`.
+- `iss`: `casita-api`.
 - `aud`: `notifications` (or an audience array containing it).
 - `exp`: expiration as a Unix timestamp; issue short-lived tokens, e.g. five minutes.
 

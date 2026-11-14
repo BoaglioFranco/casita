@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	Issuer   = "groceries-api"
+	Issuer   = "casita-api"
 	Audience = "notifications"
 )
 

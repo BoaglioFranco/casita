@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/BoaglioFranco/groceriesList/api/migrations"
+	"github.com/BoaglioFranco/casita/api/migrations"
 	"github.com/golang-migrate/migrate/v4"
 )
 

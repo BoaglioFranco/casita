@@ -7,7 +7,7 @@ status:
 
 ## Purpose
 
-Build a repeatable deployment process for the groceries application while
+Build a repeatable deployment process for the Casita application while
 learning each infrastructure component in small steps. The first host will be a
 Raspberry Pi to avoid ongoing hosting costs, but the resulting container images
 and runtime configuration should remain portable to a cloud VM.

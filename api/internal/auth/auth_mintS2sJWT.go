@@ -20,7 +20,7 @@ func MintS2sJWT(userID uuid.UUID) (string, error) {
 	now := time.Now()
 	claims := jwt.RegisteredClaims{
 		Subject:   userID.String(),
-		Issuer:    "groceries-api",
+		Issuer:    "casita-api",
 		Audience:  jwt.ClaimStrings{"notifications"},
 		IssuedAt:  jwt.NewNumericDate(now),
 		ExpiresAt: jwt.NewNumericDate(now.Add(5 * time.Minute)),

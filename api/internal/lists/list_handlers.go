@@ -3,7 +3,7 @@ package lists
 import (
 	"net/http"
 
-	"github.com/BoaglioFranco/groceriesList/api/internal/auth"
+	"github.com/BoaglioFranco/casita/api/internal/auth"
 	"github.com/gin-gonic/gin"
 )
 

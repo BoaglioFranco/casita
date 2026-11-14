@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/BoaglioFranco/groceriesList/api/internal/database"
+	"github.com/BoaglioFranco/casita/api/internal/database"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -19,7 +19,7 @@ const demoHouseholdID = "019535d9-3df7-79fb-b466-fa907fa17f9e"
 func main() {
 	databaseURL := os.Getenv("DATABASE_URL")
 	if databaseURL == "" {
-		databaseURL = "postgres://groceries:groceries@localhost:5432/groceries?sslmode=disable"
+		databaseURL = "postgres://casita_app:casita@localhost:5432/casita?sslmode=disable"
 	}
 
 	email := flag.String("email", "", "user email")

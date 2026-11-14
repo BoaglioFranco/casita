@@ -16,7 +16,7 @@
   "sqlfluff.diagnosticSeverity": "error",
   "[sql]": {
     "editor.defaultFormatter": "xsw.vscode-sqlfluff-lsp",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": false
   },
   "[yaml]": {
     "editor.defaultFormatter": "redhat.vscode-yaml",

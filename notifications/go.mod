@@ -1,4 +1,4 @@
-module github.com/BoaglioFranco/groceriesList/notifications
+module github.com/BoaglioFranco/casita/notifications
 
 go 1.26.2
 

@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/BoaglioFranco/groceriesList/notifications/internal/database"
-	"github.com/BoaglioFranco/groceriesList/notifications/internal/migrations"
+	"github.com/BoaglioFranco/casita/notifications/internal/database"
+	"github.com/BoaglioFranco/casita/notifications/internal/migrations"
 	"github.com/SherClockHolmes/webpush-go"
 	"github.com/google/uuid"
 )

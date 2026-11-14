@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/BoaglioFranco/groceriesList/api/internal/database"
+	"github.com/BoaglioFranco/casita/api/internal/database"
 	"github.com/google/uuid"
 )
 

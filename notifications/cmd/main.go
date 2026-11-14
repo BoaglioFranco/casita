@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/BoaglioFranco/groceriesList/notifications/internal/auth"
-	"github.com/BoaglioFranco/groceriesList/notifications/internal/database"
-	"github.com/BoaglioFranco/groceriesList/notifications/internal/migrations"
-	"github.com/BoaglioFranco/groceriesList/notifications/internal/subscriptions"
+	"github.com/BoaglioFranco/casita/notifications/internal/auth"
+	"github.com/BoaglioFranco/casita/notifications/internal/database"
+	"github.com/BoaglioFranco/casita/notifications/internal/migrations"
+	"github.com/BoaglioFranco/casita/notifications/internal/subscriptions"
 	"github.com/gin-gonic/gin"
 )
 

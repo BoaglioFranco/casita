@@ -11,9 +11,9 @@ import (
 	"slices"
 	"time"
 
-	"github.com/BoaglioFranco/groceriesList/api/internal/auth"
-	"github.com/BoaglioFranco/groceriesList/api/internal/database"
-	"github.com/BoaglioFranco/groceriesList/api/internal/households"
+	"github.com/BoaglioFranco/casita/api/internal/auth"
+	"github.com/BoaglioFranco/casita/api/internal/database"
+	"github.com/BoaglioFranco/casita/api/internal/households"
 	"github.com/google/uuid"
 )
 

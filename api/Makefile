@@ -1,7 +1,7 @@
 .PHONY: dev dev-db db-up db-down db-force db-reset db-shell create-user test-integration
 
 SHELL := /bin/bash
-DATABASE_URL ?= postgres://groceries:groceries@localhost:5432/groceries?sslmode=disable
+DATABASE_URL ?= postgres://casita_app:casita@localhost:5432/casita?sslmode=disable
 HOUSEHOLD_ID ?=
 
 # Run the API with hot reloading

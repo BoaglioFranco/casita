@@ -27,7 +27,7 @@ before(async () => {
     },
     bundle: true, platform: 'node', format: 'cjs', write: false,
   });
-  bundleDirectory = await mkdtemp(join(tmpdir(), 'groceries-identity-tests-'));
+  bundleDirectory = await mkdtemp(join(tmpdir(), 'casita-identity-tests-'));
   const bundlePath = join(bundleDirectory, 'modules.cjs');
   await writeFile(bundlePath, result.outputFiles[0].contents);
   ({ auth, lists, groceries, calendar, notifications, listQueries, groceryQueries, calendarQueries, notificationQueries, authGuard, QueryClient } = createRequire(import.meta.url)(bundlePath));

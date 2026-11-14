@@ -1,4 +1,4 @@
-The goal of this project is to create a quick app that lets my wife and I share a groceries list and get push notifications each time one adds or removes an item from the list. The push notifications are very important.
+Casita is a household app for shared grocery lists, calendar events, and push notifications. The push notifications are very important.
 We have 2 iphones, i don't intend to share this app with anyone and i don't have a developer account. So i came to the conclusion that the best way to implement this is with a PWA. 
 The backend is a small Go server backed by PostgreSQL, and the UI is built with React. The PWA push notification flow is the core feature.
 
@@ -12,7 +12,7 @@ make dev-start  # start without attaching
 make dev-stop   # stop app servers; leave PostgreSQL and its data running
 ```
 
-The `groceries-dev` tmux session has `api`, `notifications`, and `ui` windows.
+The `casita-dev` tmux session has `api`, `notifications`, and `ui` windows.
 Open <http://localhost:5173>. Use `Ctrl-b`, then `n` to switch windows and
 `Ctrl-b`, then `d` to detach while leaving the servers running. Run `make dev`
 again to reattach; inside tmux it switches to that session. In a noninteractive
@@ -22,6 +22,11 @@ The API uses Air for Go reloads; the UI uses Vite. Restart the notification
 service after changing its Go code, or restart the stack with `make dev-stop`
 followed by `make dev`. Failed service windows stay visible for diagnosis.
 Restart the stack after changing environment files.
+
+The Compose project is `casita`, with API database `casita`, notification database
+`notifications`, and PostgreSQL role `casita_app`. Existing installations must
+follow the [Casita cutover procedure](docs/database-migrations.md#required-cutover-for-the-casita-rename)
+before restarting; the renamed Compose project initializes fresh storage.
 
 First-time prerequisites:
 

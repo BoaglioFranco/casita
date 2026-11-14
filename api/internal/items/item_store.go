@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/BoaglioFranco/groceriesList/api/internal/database"
+	"github.com/BoaglioFranco/casita/api/internal/database"
 	"github.com/google/uuid"
 )
 
@@ -18,6 +18,18 @@ func NewItemStore(db *database.Database) *ItemStore {
 	return &ItemStore{
 		db: db,
 	}
+}
+
+func (store *ItemStore) GetListNameTx(ctx context.Context, tx database.Executor, householdID, listID uuid.UUID) (string, error) {
+	var name string
+	err := tx.GetContext(ctx, &name, `SELECT name FROM lists WHERE id = $1 AND household_id = $2`, listID, householdID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", ErrItemNotFound
+	}
+	if err != nil {
+		return "", fmt.Errorf("unable to retrieve list name: %w", err)
+	}
+	return name, nil
 }
 
 func (store *ItemStore) InsertItem(ctx context.Context, params InsertItemParams) (uuid.UUID, error) {

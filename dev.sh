@@ -2,7 +2,7 @@
 set -euo pipefail
 
 project_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-session_name=groceries-dev
+session_name=casita-dev
 
 fail() { printf 'dev: %s\n' "$*" >&2; return 1; }
 session_exists() { tmux has-session -t "=$session_name" 2>/dev/null; }

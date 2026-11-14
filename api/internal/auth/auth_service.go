@@ -9,7 +9,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/BoaglioFranco/groceriesList/api/internal/database"
+	"github.com/BoaglioFranco/casita/api/internal/database"
 	"golang.org/x/crypto/bcrypt"
 )
 

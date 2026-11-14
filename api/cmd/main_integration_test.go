@@ -14,8 +14,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/BoaglioFranco/groceriesList/api/internal/database"
-	"github.com/BoaglioFranco/groceriesList/api/migrations"
+	"github.com/BoaglioFranco/casita/api/internal/database"
+	"github.com/BoaglioFranco/casita/api/migrations"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -93,12 +93,15 @@ func TestUserIdentityAndHouseholdIsolation(t *testing.T) {
 	}
 	const secret = "integration-test-secret-at-least-32-bytes"
 	t.Setenv("S2S_TOKEN", secret)
-	type delivery struct{ Recipient, Actor uuid.UUID }
+	type delivery struct {
+		Recipient, Actor uuid.UUID
+		Title, Body      string
+	}
 	var mu sync.Mutex
 	var deliveries []delivery
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		claims := &jwt.RegisteredClaims{}
-		_, err := jwt.ParseWithClaims(strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer "), claims, func(*jwt.Token) (any, error) { return []byte(secret), nil }, jwt.WithValidMethods([]string{"HS256"}), jwt.WithIssuer("groceries-api"), jwt.WithAudience("notifications"), jwt.WithExpirationRequired())
+		_, err := jwt.ParseWithClaims(strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer "), claims, func(*jwt.Token) (any, error) { return []byte(secret), nil }, jwt.WithValidMethods([]string{"HS256"}), jwt.WithIssuer("casita-api"), jwt.WithAudience("notifications"), jwt.WithExpirationRequired())
 		if err != nil {
 			t.Error(err)
 			w.WriteHeader(401)
@@ -117,7 +120,11 @@ func TestUserIdentityAndHouseholdIsolation(t *testing.T) {
 			return
 		}
 		var payload struct {
-			UserID uuid.UUID `json:"user_id"`
+			UserID       uuid.UUID `json:"user_id"`
+			Notification struct {
+				Title string `json:"title"`
+				Body  string `json:"body"`
+			} `json:"notification"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 			t.Error(err)
@@ -127,7 +134,10 @@ func TestUserIdentityAndHouseholdIsolation(t *testing.T) {
 			t.Error(err)
 		}
 		mu.Lock()
-		deliveries = append(deliveries, delivery{payload.UserID, subject})
+		deliveries = append(deliveries, delivery{
+			Recipient: payload.UserID, Actor: subject,
+			Title: payload.Notification.Title, Body: payload.Notification.Body,
+		})
 		mu.Unlock()
 		if payload.UserID == failedPeer {
 			w.WriteHeader(500)
@@ -206,7 +216,7 @@ func TestUserIdentityAndHouseholdIsolation(t *testing.T) {
 	if scalar(`SELECT count(*) FROM lists WHERE name='Created list' AND household_id=$1`, household) != 1 {
 		t.Fatal("forged list household")
 	}
-	forged := fmt.Sprintf(`{"name":"Milk","userId":%q,"householdId":%q,"createdByUserId":%q}`, outsider, otherHousehold, outsider)
+	forged := fmt.Sprintf(`{"name":"Milk","userId":%q,"householdId":%q,"createdByUserId":%q,"listName":"Forged list","user":{"id":%q,"name":"Forged name","householdId":%q}}`, outsider, otherHousehold, outsider, outsider, otherHousehold)
 	request("POST", ownItems, forged, cookie, 201)
 	var itemID uuid.UUID
 	if err := db.GetContext(ctx, &itemID, `SELECT id FROM items WHERE list_id=$1`, ownList); err != nil {
@@ -226,6 +236,9 @@ func TestUserIdentityAndHouseholdIsolation(t *testing.T) {
 	for _, d := range deliveries {
 		if d.Actor != actor || (d.Recipient != peer && d.Recipient != failedPeer) {
 			t.Errorf("incorrect delivery %+v", d)
+		}
+		if d.Title != "Item created" || d.Body != "Milk added to Own list by Actor" {
+			t.Errorf("incorrect creation notification: %+v", d)
 		}
 	}
 	mu.Unlock()
@@ -269,10 +282,28 @@ func TestUserIdentityAndHouseholdIsolation(t *testing.T) {
 		t.Fatal("foreign list exposed")
 	}
 	request("GET", ownItems, "", otherCookie, 404)
-	request("DELETE", ownItems+"/"+itemID.String(), "", cookie, 204)
-	if scalar(`SELECT count(*) FROM activity_events WHERE actor_user_id=$1 AND event_type='ITEM_DELETE'`, actor) != 1 {
+	// A different household user removes the item. Use the current list and actor
+	// names, rather than its creator's name or any names supplied by the client.
+	peerCookie := login(peer)
+	exec(`UPDATE users SET name='Updated peer' WHERE id=$1`, peer)
+	exec(`UPDATE lists SET name='Renamed list' WHERE id=$1`, ownList)
+	request("DELETE", ownItems+"/"+itemID.String(), "", peerCookie, 204)
+	if scalar(`SELECT count(*) FROM activity_events WHERE actor_user_id=$1 AND event_type='ITEM_DELETE'`, peer) != 1 {
 		t.Fatal("missing deletion activity")
 	}
+	mu.Lock()
+	if len(deliveries) != 4 {
+		t.Errorf("expected two create and two delete deliveries, got %v", deliveries)
+	}
+	for _, d := range deliveries[2:] {
+		if d.Actor != peer || (d.Recipient != actor && d.Recipient != failedPeer) {
+			t.Errorf("incorrect deletion recipient or actor: %+v", d)
+		}
+		if d.Title != "Item deleted" || d.Body != "Milk removed from Renamed list by Updated peer" {
+			t.Errorf("incorrect deletion notification: %+v", d)
+		}
+	}
+	mu.Unlock()
 	request("DELETE", "/calendar/events/"+eventID.String(), "", cookie, 204)
 	request("POST", "/notifications/subscribe", `{"endpoint":"https://push.example.test/device","keys":{"p256dh":"key","auth":"secret"},"user_id":"forged"}`, cookie, 200)
 	// Deleting an account also revokes its sessions.

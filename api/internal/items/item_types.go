@@ -4,9 +4,10 @@ import (
 	"errors"
 	"time"
 
-	"github.com/BoaglioFranco/groceriesList/api/internal/activity"
-	"github.com/BoaglioFranco/groceriesList/api/internal/database"
-	"github.com/BoaglioFranco/groceriesList/api/internal/notifications"
+	"github.com/BoaglioFranco/casita/api/internal/activity"
+	"github.com/BoaglioFranco/casita/api/internal/auth"
+	"github.com/BoaglioFranco/casita/api/internal/database"
+	"github.com/BoaglioFranco/casita/api/internal/notifications"
 	"github.com/google/uuid"
 )
 
@@ -53,18 +54,16 @@ type CreateItemPayload struct {
 }
 
 type CreateItemParams struct {
-	HouseholdID uuid.UUID
+	User        auth.CurrentUser
 	ListID      uuid.UUID
-	ActorUserID uuid.UUID
 	Name        string
 	Description *string
 }
 
 type DeleteItemParams struct {
-	HouseholdID uuid.UUID
-	ListID      uuid.UUID
-	ItemID      uuid.UUID
-	ActorUserID uuid.UUID
+	User   auth.CurrentUser
+	ListID uuid.UUID
+	ItemID uuid.UUID
 }
 
 // Store

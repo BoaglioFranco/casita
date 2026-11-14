@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/BoaglioFranco/groceriesList/notifications/internal/database"
+	"github.com/BoaglioFranco/casita/notifications/internal/database"
 	"github.com/SherClockHolmes/webpush-go"
 )
 

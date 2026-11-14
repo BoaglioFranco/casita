@@ -1,3 +1,3 @@
 [sqlfluff]
-dialect = sqlite
+dialect = postgres
 templater = raw

@@ -35,7 +35,7 @@ func TestSubscribeHandlerForwardsAuthenticatedIdentityAndPayload(t *testing.T) {
 				_, err := jwt.ParseWithClaims(strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer "), claims,
 					func(_ *jwt.Token) (any, error) { return []byte(secret), nil },
 					jwt.WithValidMethods([]string{"HS256"}), jwt.WithExpirationRequired(),
-					jwt.WithIssuer("groceries-api"), jwt.WithAudience("notifications"))
+					jwt.WithIssuer("casita-api"), jwt.WithAudience("notifications"))
 				if err != nil || claims.Subject != userID.String() {
 					t.Errorf("incorrect authenticated identity: subject=%s, error=%v", claims.Subject, err)
 				}

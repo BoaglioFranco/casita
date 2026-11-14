@@ -1,7 +1,7 @@
 .PHONY: db-create db-up db-down db-force
 
 COMPOSE := docker compose -f ../compose.yml --project-directory ..
-DATABASE_URL ?= postgres://groceries:groceries@localhost:5432/notifications?sslmode=disable
+DATABASE_URL ?= postgres://casita_app:casita@localhost:5432/notifications?sslmode=disable
 
 # Create the service database once, using the container's PostgreSQL admin user.
 db-create:
