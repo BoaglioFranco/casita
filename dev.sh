@@ -36,8 +36,7 @@ database_target() {
 }
 
 load_environment() {
-    local service=$1 api_database_url key index
-    local shared_keys=(S2S_TOKEN VAPID_PUBLIC_KEY VAPID_PRIVATE_KEY) shared_values=()
+    local service=$1 api_database_url api_s2s_token key
     [[ -f "$project_root/api/.env" ]] ||
         { fail 'Create api/.env from api/.env.example first.'; return 1; }
     set -a
@@ -47,10 +46,10 @@ load_environment() {
     [[ -n "${DATABASE_URL:-}" ]] || { fail 'DATABASE_URL is required in api/.env.'; return 1; }
     DATABASE_URL=$(host_database_url "$DATABASE_URL")
     api_database_url=$DATABASE_URL
-    for key in "${shared_keys[@]}"; do
-        [[ -n "${!key:-}" ]] || { fail "$key is required in api/.env."; return 1; }
-        shared_values+=("${!key}")
-    done
+    # VAPID belongs to notifications, including when inherited from the shell.
+    unset VAPID_PUBLIC_KEY VAPID_PRIVATE_KEY
+    [[ -n "${S2S_TOKEN:-}" ]] || { fail 'S2S_TOKEN is required in api/.env.'; return 1; }
+    api_s2s_token=$S2S_TOKEN
     [[ ${#S2S_TOKEN} -ge 32 ]] || { fail 'S2S_TOKEN must be at least 32 characters long.'; return 1; }
     export ENV=dev PORT=2345 NOTIFICATIONS_SERVICE_URL=http://localhost:2346
     if [[ "$service" == notifications ]]; then
@@ -58,19 +57,19 @@ load_environment() {
         DATABASE_URL=${api_database_url%%\?*}
         DATABASE_URL="${DATABASE_URL%/*}/notifications"
         [[ "$api_database_url" != *\?* ]] || DATABASE_URL+="?${api_database_url#*\?}"
-        if [[ -f "$project_root/notifications/.env" ]]; then
-            set -a
-            source "$project_root/notifications/.env"
-            set +a
-        fi
+        [[ -f "$project_root/notifications/.env" ]] ||
+            { fail 'Create notifications/.env from notifications/.env.example first.'; return 1; }
+        set -a
+        source "$project_root/notifications/.env"
+        set +a
+        for key in VAPID_PUBLIC_KEY VAPID_PRIVATE_KEY; do
+            [[ -n "${!key:-}" ]] || { fail "$key is required in notifications/.env."; return 1; }
+        done
         DATABASE_URL=$(host_database_url "$DATABASE_URL")
         [[ $(database_target "$DATABASE_URL") != "$(database_target "$api_database_url")" ]] ||
             { fail 'API and notifications must use different databases.'; return 1; }
-        for index in "${!shared_keys[@]}"; do
-            key=${shared_keys[index]}
-            [[ "${!key:-}" == "${shared_values[index]}" ]] ||
-                { fail "$key must be configured identically for both services."; return 1; }
-        done
+        [[ "${S2S_TOKEN:-}" == "$api_s2s_token" ]] ||
+            { fail 'S2S_TOKEN must be configured identically for both services.'; return 1; }
         export ENV=dev PORT=2346
     fi
     export DATABASE_URL

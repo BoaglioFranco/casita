@@ -33,16 +33,19 @@ First-time prerequisites:
 - Install Docker with Compose, Go (matching `api/go.mod`), Node 22+, Bash,
   tmux, and Air (`go install github.com/air-verse/air@latest`). The launcher finds
   Air on PATH, in GOBIN, or in GOPATH/bin.
-- Copy `.env.example` to `.env` and `api/.env.example` to `api/.env`. Configure
-  matching PostgreSQL credentials, a shared S2S token, and a VAPID keypair.
+- Copy `.env.example` to `.env`, `api/.env.example` to `api/.env`, and
+  `notifications/.env.example` to `notifications/.env`. Configure matching
+  PostgreSQL credentials and a shared S2S token. Set the VAPID keypair only in
+  `notifications/.env`.
 - Run `npm --prefix ui ci` once to install UI dependencies.
 - Start PostgreSQL with `make -C api dev-db`, then create the notification
   database once with `make -C notifications db-create`.
 
 `dev.sh` loads `api/.env` for the API. Notifications inherit its database
-connection and shared keys, with the database name changed to `notifications`;
-optional values in `notifications/.env` override those defaults. Shared keys must
-match. Compose's `postgres` hostname is translated to loopback for host processes.
+connection and S2S token, with the database name changed to `notifications`;
+values in `notifications/.env` override those defaults. The S2S token must match.
+Notifications load their VAPID keypair from their own `.env`; the API does not
+need VAPID keys. Compose's `postgres` hostname is translated to loopback for host processes.
 Local ports are fixed at API 2345, notifications 2346, and UI 5173. Environment
 files are sourced by Bash: use `KEY=value` without spaces around `=`, and quote
 values containing spaces or shell metacharacters. Changes take effect after a

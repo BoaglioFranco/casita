@@ -25,8 +25,10 @@ It also resolves immediate list-change recipients by canonical user ID.
 ## Compose configuration
 
 Compose loads `api/.env.prod` for the API and `notifications/.env.prod` for this
-service. Both files are gitignored. They share `S2S_TOKEN` and VAPID keys, but use
-different `DATABASE_URL` database names and ports (API: 2345, notifications: 2346).
+service. Both files are gitignored. They share `S2S_TOKEN`, but use different
+`DATABASE_URL` database names and ports (API: 2345, notifications: 2346). Only
+notifications need the VAPID keypair. The API fetches the public key from
+notifications over HTTP.
 Production notification database connections use `postgres:5432/notifications`.
 The API's `NOTIFICATIONS_SERVICE_URL` is `http://notifications:2346`; the notification
 container's port is internal and is not published on the host.
