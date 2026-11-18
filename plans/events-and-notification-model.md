@@ -159,22 +159,4 @@ workload advantage has been established.
 - Migration of existing device subscriptions and list delivery without losing
   subscriptions or unintentionally running both delivery paths.
 
-## 4. Deployment and resource validation
 
-Start on the existing Raspberry Pi 5 with 4 GB RAM. At idle, the existing stack
-showed roughly 385 MiB used, 3.6 GiB available, and no swap usage. Docker reported
-`0B / 0B` memory for containers, so those per-container readings are unusable.
-
-Run services as independently deployable processes/containers on the same host.
-Start with one Kafka broker; this is a learning deployment with a shared host
-failure point. Measure before assuming either that it fits or needs new hardware.
-
-Kafka and Connect maximum JVM heaps of 512 MiB each were suggested as experimental
-starting settings, not validated requirements or total process memory limits.
-Check host/process memory, CPU, disk growth, startup, snapshots, backlog recovery,
-and restarts. Bound Kafka retention and account for PostgreSQL WAL retained while
-CDC is behind. Confirm ARM64 image support for selected versions.
-
-Later, migrate the containers to AWS. A single Lightsail or EC2 host is an option;
-managed Kafka and multiple machines are not required for this project's traffic.
-Choose capacity from measured usage and recheck pricing at that time.

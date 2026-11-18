@@ -16,8 +16,53 @@ import (
 	"github.com/BoaglioFranco/casita/notifications/internal/database"
 	"github.com/BoaglioFranco/casita/notifications/internal/migrations"
 	"github.com/SherClockHolmes/webpush-go"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
+
+func TestSendNotificationUsesConfiguredContact(t *testing.T) {
+	privateKey, publicKey, err := webpush.GenerateVAPIDKeys()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct {
+		name, contact, subject string
+	}{
+		{"email", "push-admin@example.test", "mailto:push-admin@example.test"},
+		{"contact URL", "https://example.test/contact", "https://example.test/contact"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var attempts atomic.Int32
+			provider := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				attempts.Add(1)
+				authorization := strings.TrimPrefix(r.Header.Get("Authorization"), "vapid t=")
+				token, _, _ := strings.Cut(authorization, ", k=")
+				claims := jwt.MapClaims{}
+				if _, _, err := jwt.NewParser().ParseUnverified(token, claims); err != nil {
+					t.Errorf("decode outbound VAPID claims: %v", err)
+				} else if claims["sub"] != tc.subject {
+					t.Errorf("VAPID subject = %v, want %s", claims["sub"], tc.subject)
+				}
+				w.WriteHeader(http.StatusCreated)
+			}))
+			defer provider.Close()
+			service := NewNotificationService(nil, publicKey, privateKey, tc.contact)
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			err := service.sendNotification(ctx, PushSubscription{
+				Endpoint: provider.URL,
+				P256dh:   "BNNL5ZaTfK81qhXOx23-wewhigUeFb632jN6LvRWCFH1ubQr77FE_9qV1FuojuRmHP42zmf34rXgW80OvUVDgTk",
+				Auth:     "zqbxT6JKstKSY9JKibZLSQ",
+			}, Notification{Title: "Test", Body: "Test"})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if attempts.Load() != 1 {
+				t.Fatalf("push requests = %d, want 1", attempts.Load())
+			}
+		})
+	}
+}
 
 func TestNotifyCleansUpOnlyExpiredSubscriptions(t *testing.T) {
 	databaseURL := os.Getenv("TEST_DATABASE_URL")
@@ -106,7 +151,7 @@ func TestNotifyCleansUpOnlyExpiredSubscriptions(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			service := NewNotificationService(db, publicKey, privateKey)
+			service := NewNotificationService(db, publicKey, privateKey, "push-admin@example.test")
 			err = service.Notify(ctx, NotificationRequest{UserID: userID, Notification: Notification{Title: "Test", Body: "Test"}})
 			if (err != nil) != tc.wantError {
 				t.Fatalf("Notify error=%v, wantError=%v", err, tc.wantError)

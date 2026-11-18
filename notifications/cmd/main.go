@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/BoaglioFranco/casita/notifications/internal/auth"
 	"github.com/BoaglioFranco/casita/notifications/internal/database"
@@ -14,6 +15,11 @@ import (
 )
 
 func main() {
+	vapidSubscriber := strings.TrimSpace(os.Getenv("VAPID_SUBSCRIBER"))
+	if vapidSubscriber == "" {
+		log.Fatal("VAPID_SUBSCRIBER is required")
+	}
+
 	requireAuth, err := auth.NewMiddleware(os.Getenv("S2S_TOKEN"))
 	if err != nil {
 		log.Fatal(err)
@@ -39,7 +45,7 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
-	service := subscriptions.NewNotificationService(db, os.Getenv("VAPID_PUBLIC_KEY"), os.Getenv("VAPID_PRIVATE_KEY"))
+	service := subscriptions.NewNotificationService(db, os.Getenv("VAPID_PUBLIC_KEY"), os.Getenv("VAPID_PRIVATE_KEY"), vapidSubscriber)
 	service.SetupPublicNotificationRoutes(router)
 	internalRoutes := router.Group("/")
 	internalRoutes.Use(requireAuth)

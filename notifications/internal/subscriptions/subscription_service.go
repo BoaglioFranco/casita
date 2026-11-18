@@ -18,6 +18,7 @@ type NotificationService struct {
 	subscriptionStore *SubscriptionStore
 	vapidPublicKey    string
 	vapidPrivateKey   string
+	vapidSubscriber   string
 }
 
 type deliveryResult struct {
@@ -25,11 +26,12 @@ type deliveryResult struct {
 	err          error
 }
 
-func NewNotificationService(db *database.Database, vapidPublicKey, vapidPrivateKey string) *NotificationService {
+func NewNotificationService(db *database.Database, vapidPublicKey, vapidPrivateKey, vapidSubscriber string) *NotificationService {
 	return &NotificationService{
 		subscriptionStore: NewSubscriptionStore(db),
 		vapidPublicKey:    vapidPublicKey,
 		vapidPrivateKey:   vapidPrivateKey,
+		vapidSubscriber:   vapidSubscriber,
 	}
 }
 
@@ -75,7 +77,7 @@ func (service *NotificationService) sendNotification(ctx context.Context, subscr
 		payload,
 		subscription.ToWebpushSubscription(),
 		&webpush.Options{
-			Subscriber:      "francoboaglio@gmail.com",
+			Subscriber:      service.vapidSubscriber,
 			VAPIDPublicKey:  service.vapidPublicKey,
 			VAPIDPrivateKey: service.vapidPrivateKey,
 			TTL:             24 * 60 * 60,

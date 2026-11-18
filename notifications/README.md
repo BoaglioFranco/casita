@@ -29,6 +29,10 @@ service. Both files are gitignored. They share `S2S_TOKEN`, but use different
 `DATABASE_URL` database names and ports (API: 2345, notifications: 2346). Only
 notifications need the VAPID keypair. The API fetches the public key from
 notifications over HTTP.
+Set `VAPID_SUBSCRIBER` in `notifications/.env` and `notifications/.env.prod` to
+an operator contact email (without `mailto:`) or an HTTPS contact URL. The
+notification service requires this value at startup and includes it in VAPID
+claims sent to push providers. Keep your actual contact in these ignored files.
 Production notification database connections use `postgres:5432/notifications`.
 The API's `NOTIFICATIONS_SERVICE_URL` is `http://notifications:2346`; the notification
 container's port is internal and is not published on the host.

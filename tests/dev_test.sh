@@ -17,17 +17,18 @@ EOF
     cat > "$project_root/notifications/.env" <<'EOF'
 VAPID_PUBLIC_KEY=public
 VAPID_PRIVATE_KEY='private#quoted-value'
+VAPID_SUBSCRIBER=push-admin@example.test
 EOF
 }
 
 test_api_environment() {
     reset_fixture
     rm "$project_root/notifications/.env"
-    export VAPID_PUBLIC_KEY=stale-public VAPID_PRIVATE_KEY=stale-private
+    export VAPID_PUBLIC_KEY=stale-public VAPID_PRIVATE_KEY=stale-private VAPID_SUBSCRIBER=stale-contact
     load_environment api
     [[ "$DATABASE_URL" == 'postgres://user:password@127.0.0.1:5432/casita?sslmode=disable' ]]
     [[ "$NOTIFICATIONS_SERVICE_URL" == http://localhost:2346 && "$PORT" == 2345 && "$ENV" == dev ]]
-    [[ ! -v VAPID_PUBLIC_KEY && ! -v VAPID_PRIVATE_KEY ]]
+    [[ ! -v VAPID_PUBLIC_KEY && ! -v VAPID_PRIVATE_KEY && ! -v VAPID_SUBSCRIBER ]]
     [[ $(export -p) == *'DATABASE_URL='* ]]
 }
 
@@ -37,6 +38,7 @@ test_notification_defaults() {
     [[ "$DATABASE_URL" == 'postgres://user:password@127.0.0.1:5432/notifications?sslmode=disable' ]]
     [[ "$PORT" == 2346 && "$VAPID_PUBLIC_KEY" == public ]]
     [[ "$VAPID_PRIVATE_KEY" == 'private#quoted-value' ]]
+    [[ "$VAPID_SUBSCRIBER" == push-admin@example.test ]]
 }
 
 test_notification_database_override() {
@@ -83,10 +85,10 @@ test_notification_env_required() {
 
 test_notification_keys_required() {
     local missing_key
-    for missing_key in VAPID_PUBLIC_KEY VAPID_PRIVATE_KEY; do
+    for missing_key in VAPID_PUBLIC_KEY VAPID_PRIVATE_KEY VAPID_SUBSCRIBER; do
         reset_fixture
         sed -i "/^${missing_key}=/d" "$project_root/notifications/.env"
-        export VAPID_PUBLIC_KEY=stale-public VAPID_PRIVATE_KEY=stale-private
+        export VAPID_PUBLIC_KEY=stale-public VAPID_PRIVATE_KEY=stale-private VAPID_SUBSCRIBER=stale-contact
         if load_environment notifications > "$fixture_root/error" 2>&1; then
             return 1
         fi

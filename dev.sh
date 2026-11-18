@@ -47,7 +47,7 @@ load_environment() {
     DATABASE_URL=$(host_database_url "$DATABASE_URL")
     api_database_url=$DATABASE_URL
     # VAPID belongs to notifications, including when inherited from the shell.
-    unset VAPID_PUBLIC_KEY VAPID_PRIVATE_KEY
+    unset VAPID_PUBLIC_KEY VAPID_PRIVATE_KEY VAPID_SUBSCRIBER
     [[ -n "${S2S_TOKEN:-}" ]] || { fail 'S2S_TOKEN is required in api/.env.'; return 1; }
     api_s2s_token=$S2S_TOKEN
     [[ ${#S2S_TOKEN} -ge 32 ]] || { fail 'S2S_TOKEN must be at least 32 characters long.'; return 1; }
@@ -62,7 +62,7 @@ load_environment() {
         set -a
         source "$project_root/notifications/.env"
         set +a
-        for key in VAPID_PUBLIC_KEY VAPID_PRIVATE_KEY; do
+        for key in VAPID_PUBLIC_KEY VAPID_PRIVATE_KEY VAPID_SUBSCRIBER; do
             [[ -n "${!key:-}" ]] || { fail "$key is required in notifications/.env."; return 1; }
         done
         DATABASE_URL=$(host_database_url "$DATABASE_URL")
